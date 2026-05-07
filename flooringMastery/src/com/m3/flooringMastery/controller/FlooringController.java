@@ -1,8 +1,11 @@
 package com.m3.flooringMastery.controller;
 
-import com.m3.flooringMastery.service.OrderServiceLayer;
+import com.m3.flooringMastery.dao.OrderPersistenceException;
+import com.m3.flooringMastery.model.Order;
 import com.m3.flooringMastery.service.OrderServiceLayerImpl;
 import com.m3.flooringMastery.view.FlooringMasteryView;
+
+import java.util.List;
 
 public class FlooringController {
     OrderServiceLayerImpl orderService;
@@ -12,55 +15,70 @@ public class FlooringController {
             boolean keepGoing = true;
             int menuSelection = 0;
 
+            try {
+                while (keepGoing) {
+                    view.displayUserMenu();
+                    menuSelection = view.getMenuSelection();
 
-            while (keepGoing) {
-                displayMenu();
-                menuSelection = view.getMenuSelection();
-
-                switch (menuSelection) {
-                    case 1:
-                        displayOrders();
-                        break;
-                    case 2:
-                        addOrder();
-                        break;
-                    case 3:
-                        editOrder();
-                        break;
-                    case 4:
-                        removeOrder();
-                        break;
-                    case 5:
-                        exportAllData();
-                        break;
-                    case 6:
-                        keepGoing = false;
-                        break;
-                    default:
-                        view.displayUnknownCommandBanner();
+                    switch (menuSelection) {
+                        case 1:
+                            displayOrders();
+                            break;
+                        case 2:
+                            addOrder();
+                            break;
+                        case 3:
+                            editOrder();
+                            break;
+                        case 4:
+                            removeOrder();
+                            break;
+                        case 5:
+                            exportAllData();
+                            break;
+                        case 6:
+                            keepGoing = false;
+                            break;
+                        default:
+                            view.displayUnknownCommandBanner();
+                    }
                 }
+            } catch (OrderPersistenceException e) {
+                view.displayError(e.getMessage());
             }
+
         }
 
-        public void displayMenu() {
-            System.out.println("1. Display Orders");
-            System.out.println("2. Add an Order");
-            System.out.println("3. Edit an Order");
-            System.out.println("4. Remove an Order");
-            System.out.println("5. Export All Data");
-            System.out.println("6. Quit");
+        public void displayOrders() throws OrderPersistenceException {
+            List<Order> orders = orderService.getOrdersByDate(view.getDateFromUser());
+            view.displayOrders(orders);
         }
 
-        public void displayOrders() {
+        public void addOrder() throws OrderPersistenceException {
+            view.displayAddOrderBanner();
+            boolean hasErrors= false;
+            do {
+                Order order = view.getOrderFromUser();
+                try {
+                    orderService.createOrder(order);
+                    view.displayAddSuccessBanner();
+                    hasErrors = false;
+                } catch (OrderPersistenceException e) {
+                    hasErrors = true;
+                    view.displayError(e.getMessage());
+                }
+            } while (hasErrors);
+
         }
 
-        public void addOrder() {
+        public void editOrder() throws OrderPersistenceException {
+
+
         }
 
-        public void editOrder() {
-        }
+        public void removeOrder() throws OrderPersistenceException {
+            view.removeOrder();
 
-        public void removeOrder() {
         }
 
         public void exportAllData() {

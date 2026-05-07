@@ -1,8 +1,10 @@
 package com.m3.flooringMastery.service;
 
+import com.m3.flooringMastery.dao.OrderPersistenceException;
 import com.m3.flooringMastery.model.Order;
 
 import java.time.LocalDate;
+import java.util.List;
 
 public class OrderServiceLayerImpl implements OrderServiceLayer {
 
@@ -20,8 +22,9 @@ public class OrderServiceLayerImpl implements OrderServiceLayer {
     }
 
     @Override
-    public void getOrdersByDate(LocalDate date) throws OrderPersistenceException {
+    public List<Order> getOrdersByDate(LocalDate date) throws OrderPersistenceException {
 
+        return null;
     }
 
     @Override

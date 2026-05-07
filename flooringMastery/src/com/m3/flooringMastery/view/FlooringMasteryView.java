@@ -45,7 +45,7 @@ public class FlooringMasteryView {
         return null;
     }
 
-    public void removeOrder(Order order) {
+    public void removeOrder() {
     }
 
     public void displayOrders(List<Order> orders) {
@@ -68,6 +68,8 @@ public class FlooringMasteryView {
     }
 
     public void displayError(String msg) {
+        io.displayMessage("=== ERROR ===");
+        io.displayMessage(msg);
     }
 
     public void exportData(List<Order> orders) {
@@ -85,6 +87,11 @@ public class FlooringMasteryView {
     }
 
 
-
-
+    public void displayAddOrderBanner() {
+        io.displayMessage("=== Add an Order ===");
     }
+
+    public void displayAddSuccessBanner() {
+        io.displayMessage("Order successfully added. Please hit enter to continue.");
+    }
+}
