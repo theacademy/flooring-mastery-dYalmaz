@@ -7,9 +7,9 @@ import java.time.LocalDate;
 import java.util.List;
 
 public interface OrderServiceLayer {
-        public void createOrder(Order order) throws OrderPersistenceException, DuplicateIdException;
+        public void createOrder(Order order) throws OrderPersistenceException, DuplicateIdException, OrderDataValidationException;
         public void editOrder(Order order) throws OrderPersistenceException;
         public List<Order> getOrdersByDate(LocalDate date) throws OrderPersistenceException;
-        public void removeOrder(int orderId, LocalDate date) throws OrderPersistenceException;
+        public Order removeOrder(int orderId, LocalDate date) throws OrderPersistenceException;
         public void exportAllData() throws OrderPersistenceException;
 }

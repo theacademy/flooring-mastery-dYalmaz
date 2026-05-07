@@ -20,7 +20,7 @@ public class OrderDAOImpl implements OrderDAO {
 
 
     @Override
-    public void getOrders(String date, int orderNumber) throws OrderPersistenceException {
+    public List<Order> getOrders(LocalDate date) throws OrderPersistenceException {
         Scanner scanner;
 
         try {
@@ -35,9 +35,10 @@ public class OrderDAOImpl implements OrderDAO {
         while (scanner.hasNextLine()) {
             currentLine = scanner.nextLine();
             currentOrder = unmarshallOrder(currentLine);
-            orders.get(LocalDate.parse(date)).add(currentOrder);
+            orders.get(date).add(currentOrder);
         }
         scanner.close();
+        return orders.get(date);
     }
 
     private Order unmarshallOrder(String orderAsText) {
@@ -77,8 +78,9 @@ public class OrderDAOImpl implements OrderDAO {
     }
 
     @Override
-    public void removeOrder(String date, int orderNumber) throws OrderPersistenceException {
+    public Order removeOrder(LocalDate date, int orderNumber) throws OrderPersistenceException {
 
+        return null;
     }
 
     @Override

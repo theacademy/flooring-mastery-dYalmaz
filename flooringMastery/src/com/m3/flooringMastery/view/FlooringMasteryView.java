@@ -54,10 +54,30 @@ public class FlooringMasteryView {
     }
 
     public Order editOrderMenu(Order order) {
-        return null;
+        String customerName = io.readString("Enter new customer name (" + order.getCustomerName() + "): ");
+        String state = io.readString("Enter new state (" + order.getState() + "): ");
+        String productType = io.readString("Enter new product type (" + order.getProductType() + "): ");
+        BigDecimal area = io.readBigDecimal("Enter new area (" + order.getArea() + "): ");
+
+        if (!customerName.trim().isEmpty()) {
+            order.setCustomerName(customerName);
+        }
+        if (!state.trim().isEmpty()) {
+            order.setState(state);
+        }
+        if (!productType.trim().isEmpty()) {
+            order.setProductType(productType);
+        }
+        if (area.compareTo(BigDecimal.ZERO) > 0) {
+            order.setArea(area);
+        }
+
+        return order;
     }
 
     public void removeOrder() {
+        int orderNumber = io.readInt("Please enter the order number to remove: ");
+        // Implement logic to remove the order based on the order number
     }
 
     public void displayOrders(List<Order> orders) {
