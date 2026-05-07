@@ -2,14 +2,20 @@ package com.m3.flooringMastery.controller;
 
 import com.m3.flooringMastery.dao.OrderPersistenceException;
 import com.m3.flooringMastery.model.Order;
+import com.m3.flooringMastery.service.OrderServiceLayer;
 import com.m3.flooringMastery.service.OrderServiceLayerImpl;
 import com.m3.flooringMastery.view.FlooringMasteryView;
 
 import java.util.List;
 
 public class FlooringController {
-    OrderServiceLayerImpl orderService;
+    OrderServiceLayer orderService;
     FlooringMasteryView view;
+
+    public FlooringController(OrderServiceLayer orderService, FlooringMasteryView view) {
+        this.orderService = orderService;
+        this.view = view;
+    }
 
         public void run() {
             boolean keepGoing = true;

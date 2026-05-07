@@ -1,12 +1,13 @@
 package com.m3.flooringMastery.model;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.Date;
 
 public class Order {
     int orderNumber;
     String customerName;
-    Date orderDate;
+    LocalDate orderDate;
     String state;
     BigDecimal taxRate;
     BigDecimal area;
@@ -32,11 +33,11 @@ public class Order {
         this.customerName = customerName;
     }
 
-    public Date getOrderDate() {
+    public LocalDate getOrderDate() {
         return orderDate;
     }
 
-    public void setOrderDate(Date orderDate) {
+    public void setOrderDate(LocalDate orderDate) {
         this.orderDate = orderDate;
     }
 

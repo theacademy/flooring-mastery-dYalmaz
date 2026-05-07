@@ -69,17 +69,31 @@ public class OrderDAOImpl implements OrderDAO {
 
     @Override
     public void addOrder(Order order) throws OrderPersistenceException {
-
+        getOrders(order.getOrderDate()).add(order);
     }
 
     @Override
     public void editOrder(Order order) throws OrderPersistenceException {
-
+        List<Order> ordersByDate = getOrders(order.getOrderDate());
+        for(int i=0; i<ordersByDate.size(); i++){
+            if(ordersByDate.get(i).getOrderNumber()==order.getOrderNumber()){
+                ordersByDate.set(i, order);
+                break;
+            }
+        }
+        orders.put(order.getOrderDate(), ordersByDate);
     }
 
     @Override
     public Order removeOrder(LocalDate date, int orderNumber) throws OrderPersistenceException {
-
+        List<Order> ordersByDate = getOrders(date);
+        for(int i=0; i<ordersByDate.size(); i++){
+            if(ordersByDate.get(i).getOrderNumber()==orderNumber){
+                Order removedOrder = ordersByDate.remove(i);
+                orders.put(date, ordersByDate);
+                return removedOrder;
+            }
+        }
         return null;
     }
 
