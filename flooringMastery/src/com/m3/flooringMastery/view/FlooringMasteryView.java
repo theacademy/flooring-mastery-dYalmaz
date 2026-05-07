@@ -2,6 +2,7 @@ package com.m3.flooringMastery.view;
 
 import com.m3.flooringMastery.model.Order;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -38,7 +39,18 @@ public class FlooringMasteryView {
     }
 
     public Order getOrderFromUser() {
-        return null;
+        String customerName = io.readString("Please enter the customer's name: ");
+        String state = io.readString("Please enter the state: ");
+        String productType = io.readString("Please enter the product type: ");
+        BigDecimal area = io.readBigDecimal("Please enter the area (in square feet): ");
+
+        Order order = new Order();
+        order.setCustomerName(customerName);
+        order.setState(state);
+        order.setProductType(productType);
+        order.setArea(area);
+
+        return order;
     }
 
     public Order editOrderMenu(Order order) {
