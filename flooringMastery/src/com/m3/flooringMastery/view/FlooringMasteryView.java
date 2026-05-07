@@ -46,6 +46,7 @@ public class FlooringMasteryView {
 
         String state = io.readString("Please enter the state: ");
 
+
         showProducts();
         String productChoice = io.readString("Please select a product from the list above: ");
         String finalProductChoice = productChoice;

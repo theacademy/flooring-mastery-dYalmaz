@@ -7,9 +7,9 @@ import java.util.List;
 
 public interface ProductDAO {
 
-        public BigDecimal getCostPerSquareFoot(String productType);
-        public BigDecimal getLaborCostPerSquareFoot(String productType);
-        public String getProductType(String productType);
-        public List<Product> getAllProducts();
+        public BigDecimal getCostPerSquareFoot(String productType) throws ProductPersistenceException;
+        public BigDecimal getLaborCostPerSquareFoot(String productType) throws ProductPersistenceException;
+        public String getProductType(String productType) throws ProductPersistenceException;
+        public List<Product> getAllProducts() throws ProductPersistenceException;
 
 }
