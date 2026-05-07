@@ -14,31 +14,14 @@ import java.util.Scanner;
 
 public class OrderDAOImpl implements OrderDAO {
 
-    String ordersDir;
-    Map<LocalDate, List<Order>> orders = new HashMap<>();
+    String ordersDir = "C:\\Users\\m3\\Desktop\\Software Guild\\flooringMastery\\src\\com\\m3\\flooringMastery\\data\\orders\\";
+    Map<LocalDate, Integer> orders = new HashMap<>();
     public static final String DELIMETER = "::";
 
 
     @Override
     public List<Order> getOrders(LocalDate date) throws OrderPersistenceException {
-        Scanner scanner;
-
-        try {
-            scanner = new Scanner(new BufferedReader(new FileReader(ordersDir + "Orders_" + date + ".txt")));
-    }catch (FileNotFoundException e) {
-            throw new OrderPersistenceException("Could not load order data into memory.", e);
-        }
-
-        String currentLine;
-        Order currentOrder;
-
-        while (scanner.hasNextLine()) {
-            currentLine = scanner.nextLine();
-            currentOrder = unmarshallOrder(currentLine);
-            orders.get(date).add(currentOrder);
-        }
-        scanner.close();
-        return orders.get(date);
+        return List.of();
     }
 
     private Order unmarshallOrder(String orderAsText) {
@@ -67,9 +50,23 @@ public class OrderDAOImpl implements OrderDAO {
         return orderFromFile;
     }
 
+    private void marshallOrder(Order order){
+        String orderAsText = order.getCustomerName() + DELIMETER;
+        orderAsText += order.getState() + DELIMETER;
+        orderAsText += order.getProductType() + DELIMETER;
+        orderAsText += order.getArea() + DELIMETER;
+        orderAsText += order.getTaxRate() + DELIMETER;
+        orderAsText += order.getMaterialCost() + DELIMETER;
+        orderAsText += order.getLaborCost() + DELIMETER;
+        orderAsText += order.getTax() + DELIMETER;
+        orderAsText += order.getTotal();
+    }
+
+
+
     @Override
     public void addOrder(Order order) throws OrderPersistenceException {
-        getOrders(order.getOrderDate()).add(order);
+        orders.put(order.getOrderDate(), order.getOrderNumber());
     }
 
     @Override
@@ -81,7 +78,7 @@ public class OrderDAOImpl implements OrderDAO {
                 break;
             }
         }
-        orders.put(order.getOrderDate(), ordersByDate);
+        orders.put(order.getOrderDate(), order.getOrderNumber());
     }
 
     @Override
@@ -89,9 +86,7 @@ public class OrderDAOImpl implements OrderDAO {
         List<Order> ordersByDate = getOrders(date);
         for(int i=0; i<ordersByDate.size(); i++){
             if(ordersByDate.get(i).getOrderNumber()==orderNumber){
-                Order removedOrder = ordersByDate.remove(i);
-                orders.put(date, ordersByDate);
-                return removedOrder;
+                return ordersByDate.remove(i);
             }
         }
         return null;

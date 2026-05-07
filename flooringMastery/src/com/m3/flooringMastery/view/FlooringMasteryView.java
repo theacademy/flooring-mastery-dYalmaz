@@ -25,33 +25,32 @@ public class FlooringMasteryView {
         return io.readInt("Please select from the above choices.", 1, 6);
     }
 
-    public void displayUserMenu() {
-        System.out.println("1. Display Orders");
-        System.out.println("2. Add an Order");
-        System.out.println("3. Edit an Order");
-        System.out.println("4. Remove an Order");
-        System.out.println("5. Export All Data");
-        System.out.println("6. Quit");
-    }
-
     public LocalDate getDateFromUser() {
         return io.readDate("Please enter a date (MM/DD/YYYY): ");
     }
 
     public Order getOrderFromUser() {
+        LocalDate date = io.readDate("Please enter the order date (MM/DD/YYYY): ");
         String customerName = io.readString("Please enter the customer's name: ");
         String state = io.readString("Please enter the state: ");
-        String productType = io.readString("Please enter the product type: ");
+        showProducts();
+        String productChoice = io.readString("Please select a product from the list above: ");
         BigDecimal area = io.readBigDecimal("Please enter the area (in square feet): ");
 
         Order order = new Order();
         order.setCustomerName(customerName);
         order.setState(state);
-        order.setProductType(productType);
+        order.setProductType(productChoice);
         order.setArea(area);
 
         return order;
     }
+
+        public void showProducts() {
+            io.displayMessage("Available Products:");
+            // Implement logic to display available products here
+        }
+
 
     public Order editOrderMenu(Order order) {
         String customerName = io.readString("Enter new customer name (" + order.getCustomerName() + "): ");

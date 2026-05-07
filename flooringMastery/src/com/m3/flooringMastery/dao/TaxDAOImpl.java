@@ -21,7 +21,7 @@ public class TaxDAOImpl implements TaxDAO {
 
     @Override
     public boolean stateExists(String stateAbbreviation) throws TaxPersistenceException {
-        return false;
+        return true;
     }
 
     @Override

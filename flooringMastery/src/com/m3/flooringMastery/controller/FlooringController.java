@@ -23,7 +23,6 @@ public class FlooringController {
 
             try {
                 while (keepGoing) {
-                    view.displayUserMenu();
                     menuSelection = view.getMenuSelection();
 
                     switch (menuSelection) {
