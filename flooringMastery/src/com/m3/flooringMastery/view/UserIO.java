@@ -1,6 +1,7 @@
 package com.m3.flooringMastery.view;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 
 public interface UserIO {
 
@@ -14,5 +15,7 @@ public interface UserIO {
 
     BigDecimal readBigDecimal(String prompt);
     BigDecimal readBigDecimal(String prompt, BigDecimal min);
+
+    LocalDate readDate(String s);
 
 }

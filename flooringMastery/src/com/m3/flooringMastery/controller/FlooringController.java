@@ -5,11 +5,13 @@ import com.m3.flooringMastery.service.OrderServiceLayerImpl;
 import com.m3.flooringMastery.view.FlooringMasteryView;
 
 public class FlooringController {
+    OrderServiceLayerImpl orderService;
+    FlooringMasteryView view;
+
         public void run() {
             boolean keepGoing = true;
             int menuSelection = 0;
-            OrderServiceLayerImpl orderService = new OrderServiceLayerImpl();
-            FlooringMasteryView view = new FlooringMasteryView();
+
 
             while (keepGoing) {
                 displayMenu();

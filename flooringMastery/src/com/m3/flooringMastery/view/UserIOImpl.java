@@ -55,4 +55,12 @@ public class UserIOImpl implements UserIO{
             return userBD;
         }
 
+        @Override
+        public java.time.LocalDate readDate(String prompt) {
+            System.out.println(prompt);
+            Scanner sc = new Scanner(System.in);
+            String userDate = sc.nextLine();
+            return java.time.LocalDate.parse(userDate, java.time.format.DateTimeFormatter.ofPattern("MM/dd/yyyy"));
+        }
+
 }
