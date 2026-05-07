@@ -3,10 +3,10 @@ package com.m3.flooringMastery.dao;
 import com.m3.flooringMastery.model.Order;
 
 public interface OrderDAO {
-    Order getOrders(String date, int orderNumber);
-    void addOrder(Order order);
-    void editOrder(Order order);
-    void removeOrder(String date, int orderNumber);
-    void exportData();
+    void getOrders(String date, int orderNumber) throws OrderPersistenceException;
+    void addOrder(Order order) throws OrderPersistenceException;
+    void editOrder(Order order) throws OrderPersistenceException;
+    void removeOrder(String date, int orderNumber) throws OrderPersistenceException;
+    void exportData() throws OrderPersistenceException;
 
 }

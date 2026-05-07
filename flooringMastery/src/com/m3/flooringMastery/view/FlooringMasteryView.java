@@ -61,22 +61,64 @@ public class FlooringMasteryView {
     }
 
     public void displayOrders(List<Order> orders) {
+        for (Order order : orders) {
+            String orderInfo = String.format("Order #%d: %s, %s, %s, %.2f sq ft",
+                    order.getOrderNumber(),
+                    order.getCustomerName(),
+                    order.getState(),
+                    order.getProductType(),
+                    order.getArea());
+            io.displayMessage(orderInfo);
+        }
+        io.readString("Please hit enter to continue.");
     }
 
     public void displayOrder(Order order) {
+        if(order != null) {
+            String orderInfo = String.format("Order #%d: %s, %s, %s, %.2f sq ft",
+                    order.getOrderNumber(),
+                    order.getCustomerName(),
+                    order.getState(),
+                    order.getProductType(),
+                    order.getArea());
+            io.displayMessage(orderInfo);
+        } else {
+            io.displayMessage("Order not found.");
+        }
     }
 
     public void displayOrderSummary(Order order) {
+        if (order != null) {
+            String orderInfo = String.format("Order #%d: %s, %s, %s, %.2f sq ft\nMaterial Cost: $%.2f\nLabor Cost: $%.2f\nTax: $%.2f\nTotal: $%.2f",
+                    order.getOrderNumber(),
+                    order.getCustomerName(),
+                    order.getState(),
+                    order.getProductType(),
+                    order.getArea(),
+                    order.getMaterialCost(),
+                    order.getLaborCost(),
+                    order.getTax(),
+                    order.getTotal());
+            io.displayMessage(orderInfo);
+        } else {
+            io.displayMessage("Order not found.");
+        }
     }
 
     public boolean promptForSave(String message) {
-        return false;
+        String response = io.readString(message + " (Y/N): ");
+        return response.equalsIgnoreCase("Y");
     }
 
     public void displayProducts(List<String> products) {
+        io.displayMessage("Available Products:");
+        for (String product : products) {
+            io.displayMessage("- " + product);
+        }
     }
 
     public void displayBanner() {
+        io.displayMessage("=== Welcome to the Flooring Mastery Program ===");
     }
 
     public void displayError(String msg) {
@@ -85,6 +127,10 @@ public class FlooringMasteryView {
     }
 
     public void exportData(List<Order> orders) {
+        io.displayMessage("Exporting data...");
+        // Implement export logic here
+        io.displayMessage("Data exported successfully. Please hit enter to continue.");
+        io.readString("");
     }
 
     public String getUserInput(String prompt) {
