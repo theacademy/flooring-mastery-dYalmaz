@@ -128,4 +128,5 @@ public class Order {
     public BigDecimal getLaborCostPerSquareFoot() {
         return laborCostPerSquareFoot;
     }
+
 }

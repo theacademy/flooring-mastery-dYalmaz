@@ -108,8 +108,10 @@ public class FlooringController {
     public void editOrder() {
 
         try {
+            // 1. Get date
             LocalDate date = view.getDateFromUser();
 
+            // 2. Load orders
             List<Order> orders = orderService.getOrdersByDate(date);
 
             if (orders.isEmpty()) {
@@ -117,10 +119,13 @@ public class FlooringController {
                 return;
             }
 
+            // 3. Show orders
             view.displayOrders(orders);
 
+            // 4. Get order number
             int orderNumber = view.getUserOrderNumber();
 
+            // 5. Find order
             Order original = orders.stream()
                     .filter(o -> o.getOrderNumber() == orderNumber)
                     .findFirst()
@@ -131,14 +136,17 @@ public class FlooringController {
                 return;
             }
 
+            // 6. Get updated order from view
             Order updated = view.editOrderMenu(original);
-            orderService.recalculateOrder(updated);
+
+            // 7. IMPORTANT: service should handle EVERYTHING (validation + recalculation)
             orderService.editOrder(updated);
 
+            // 8. Success message
             view.displayMessage("Order updated successfully.");
 
         } catch (Exception e) {
-            view.displayError(e.getMessage());
+            view.displayError("Edit error: " + e.getMessage());
         }
     }
 

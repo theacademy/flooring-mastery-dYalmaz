@@ -12,12 +12,11 @@ import java.time.LocalDate;
 import java.util.List;
 
 public interface OrderServiceLayer {
-        public Order createOrder(Order order) throws OrderPersistenceException, DuplicateIdException, OrderDataValidationException, FileNotFoundException, TaxPersistenceException, ProductPersistenceException;
+        public void createOrder(Order order) throws OrderPersistenceException, DuplicateIdException, OrderDataValidationException, FileNotFoundException, TaxPersistenceException, ProductPersistenceException;
         public void editOrder(Order order) throws OrderPersistenceException, FileNotFoundException;
         public List<Order> getOrdersByDate(LocalDate date) throws OrderPersistenceException, FileNotFoundException;
         public void removeOrder(int orderId, LocalDate date) throws OrderPersistenceException, FileNotFoundException;
         public void exportAllData() throws OrderPersistenceException;
         List<Product> getAllProducts() throws ProductPersistenceException;
         BigDecimal getTaxRate(String state) throws TaxPersistenceException;
-        void recalculateOrder(Order updatedOrder);
 }

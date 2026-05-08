@@ -104,15 +104,12 @@ public class FlooringMasteryView {
 
     public Order editOrderMenu(Order originalOrder) {
 
-        // NEW ORDER COPY (do not mutate original directly)
         Order updated = new Order();
 
         updated.setOrderNumber(originalOrder.getOrderNumber());
         updated.setOrderDate(originalOrder.getOrderDate());
 
-        boolean stateChanged = false;
-        boolean productChanged = false;
-        boolean areaChanged = false;
+        boolean needsRecalculation = false;
 
         // ---------- CUSTOMER NAME ----------
         String customerName = io.readString(
@@ -134,7 +131,7 @@ public class FlooringMasteryView {
             updated.setState(originalOrder.getState());
         } else {
             updated.setState(state.toUpperCase());
-            stateChanged = true;
+            needsRecalculation = true;
         }
 
         // ---------- PRODUCT TYPE ----------
@@ -146,7 +143,7 @@ public class FlooringMasteryView {
             updated.setProductType(originalOrder.getProductType());
         } else {
             updated.setProductType(productType);
-            productChanged = true;
+            needsRecalculation = true;
         }
 
         // ---------- AREA ----------
@@ -165,7 +162,7 @@ public class FlooringMasteryView {
                     updated.setArea(originalOrder.getArea());
                 } else {
                     updated.setArea(area);
-                    areaChanged = true;
+                    needsRecalculation = true;
                 }
 
             } catch (NumberFormatException e) {
@@ -174,20 +171,19 @@ public class FlooringMasteryView {
             }
         }
 
-        // ---------- COPY ALL FINANCIAL FIELDS (TEMPORARY - WILL BE RECOMPUTED) ----------
+        // ---------- COPY NON-DEPENDENT DATA ----------
         updated.setTaxRate(originalOrder.getTaxRate());
         updated.setCostPerSquareFoot(originalOrder.getCostPerSquareFoot());
         updated.setLaborCostPerSquareFoot(originalOrder.getLaborCostPerSquareFoot());
 
-        // IMPORTANT: do NOT copy these blindly — service will recalc
+        // IMPORTANT: derived fields cleared (service recalculates)
         updated.setMaterialCost(null);
         updated.setLaborCost(null);
         updated.setTax(null);
         updated.setTotal(null);
 
-        // ---------- RETURN UPDATED ORDER ----------
-        // Controller/service MUST call:
-        // service.recalculateOrder(updated);
+        // OPTIONAL: attach flag via a transient field (if you add one later)
+         updated.setNeedsRecalculation(needsRecalculation);
 
         return updated;
     }
