@@ -12,7 +12,8 @@ public class OrderDAOImpl implements OrderDAO {
 
     public static final String ORDER_DIR = "flooringMastery/Orders/";
     Map<LocalDate, List<Order>> orders = new HashMap<>();
-    public static final String DELIMETER = ",";
+    public static final String DELIMETER = ":;:";
+        public static final String BACKUP_DIR = "flooringMastery/Backup/";
 
 
     @Override
@@ -27,7 +28,7 @@ public class OrderDAOImpl implements OrderDAO {
 
     private Order unmarshallOrder(String line) {
 
-        String[] tokens = line.split(",");
+        String[] tokens = line.split(DELIMETER);
 
         if (tokens.length < 12) {
             throw new IllegalArgumentException(
@@ -152,8 +153,36 @@ public class OrderDAOImpl implements OrderDAO {
     }
 
     @Override
-    public void exportData() {
+    public void exportData() throws OrderPersistenceException {
+        loadOrders();
+        File backupDir = new File(BACKUP_DIR);
+        if (!backupDir.exists()) {
+            backupDir.mkdirs();
+        }
+        File exportFile = new File(backupDir, "DataExport.txt");
+        try (PrintWriter out = new PrintWriter(new FileWriter(exportFile))) {
+            out.println(
+                    "OrderNumber,CustomerName,State,TaxRate,ProductType," +
+                            "Area,CostPerSquareFoot,LaborCostPerSquareFoot," +
+                            "MaterialCost,LaborCost,Tax,Total,OrderDate"
+            );
+            for (Map.Entry<LocalDate, List<Order>> entry : orders.entrySet()) {
+                LocalDate date = entry.getKey();
+                for (Order order : entry.getValue()) {
 
+                    out.println(
+                            marshallOrder(order)
+                                    + DELIMETER
+                                    + date
+                    );
+                }
+            }
+        } catch (IOException e) {
+
+            throw new OrderPersistenceException(
+                    "Could not export data.", e
+            );
+        }
     }
 
     private void loadOrders() throws OrderPersistenceException {

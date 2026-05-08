@@ -239,11 +239,10 @@ public class FlooringMasteryView {
         io.displayMessage(msg);
     }
 
-    public void exportData(List<Order> orders) {
-        io.displayMessage("Exporting data...");
-        // Implement export logic here
-        io.displayMessage("Data exported successfully. Please hit enter to continue.");
-        io.readString("");
+    public void exportData() {
+        io.displayMessage("=== Export All Data ===");
+        io.displayMessage("All order data has been exported successfully.");
+        io.readString("Please hit enter to continue.");
     }
 
     public void displayUnknownCommandBanner() {

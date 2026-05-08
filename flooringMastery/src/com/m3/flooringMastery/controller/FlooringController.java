@@ -216,7 +216,14 @@ public class FlooringController {
         }
     }
 
-        public void exportAllData() {
+    public void exportAllData() {
+
+        try {
+            orderService.exportAllData();
+            view.exportData();
+        } catch (Exception e) {
+            view.displayError("Export failed: " + e.getMessage());
         }
+    }
 
 }

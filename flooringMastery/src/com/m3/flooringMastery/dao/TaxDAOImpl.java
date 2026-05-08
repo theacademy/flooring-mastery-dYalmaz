@@ -9,7 +9,7 @@ import java.util.*;
 public class TaxDAOImpl implements TaxDAO {
 
      public static final String TAX_FILE = "flooringMastery/Data/Taxes.txt";
-     public static final String DELIMITER = ",";
+     public static final String DELIMITER = ":;:";
     Map<String, Tax> taxes = new HashMap<>();
      Tax tax;
 

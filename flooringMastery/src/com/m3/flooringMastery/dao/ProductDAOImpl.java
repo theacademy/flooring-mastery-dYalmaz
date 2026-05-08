@@ -11,7 +11,7 @@ import java.util.*;
 public class ProductDAOImpl implements ProductDAO {
 
     public static final String PRODUCT_FILE = "flooringMastery/Data/Products.txt";
-    public static final String DELIMITER = ",";
+    public static final String DELIMITER = ":;:";
     Map<String, Product> products = new HashMap<>();
 
     @Override
