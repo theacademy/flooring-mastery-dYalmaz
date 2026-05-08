@@ -181,8 +181,8 @@ public class FlooringMasteryView {
         return updated;
     }
 
-    public void removeOrder() {
-        int orderNumber = io.readInt("Please enter the order number to remove: ");
+    public int getOrderNumberForRemoval() {
+        return io.readInt("Please enter the order number to remove: ");
     }
 
     public void displayOrders(List<Order> orders) {

@@ -123,15 +123,32 @@ public class OrderDAOImpl implements OrderDAO {
 
         List<Order> list = orders.get(date);
 
-        if (list == null) return;
+        if (list == null) {
+            return;
+        }
 
         list.removeIf(o -> o.getOrderNumber() == orderNumber);
 
+        // If no orders left → delete file
         if (list.isEmpty()) {
-            orders.remove(date);
-        }
 
-        writeOrders();
+            orders.remove(date);
+
+            String fileName = ORDER_DIR + "Orders_" +
+                    date.format(DateTimeFormatter.ofPattern("MMddyyyy")) +
+                    ".txt";
+
+            File file = new File(fileName);
+
+            if (file.exists()) {
+                file.delete();
+            }
+
+        } else {
+
+            // otherwise rewrite updated file
+            writeOrdersForDate(date, list);
+        }
     }
 
     @Override

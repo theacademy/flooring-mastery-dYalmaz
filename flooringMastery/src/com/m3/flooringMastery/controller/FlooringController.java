@@ -161,9 +161,60 @@ public class FlooringController {
         }
     }
 
-        public void removeOrder() throws OrderPersistenceException {
-            view.removeOrder();
+    public void removeOrder() {
+
+        try {
+            // 1. Get date
+            LocalDate date = view.getDateFromUser();
+
+            // 2. Load orders
+            List<Order> orders = orderService.getOrdersByDate(date);
+
+            if (orders.isEmpty()) {
+                view.displayError("No orders found for that date.");
+                return;
+            }
+
+            // 3. Display orders
+            view.displayOrders(orders);
+
+            // 4. Ask for order number
+            int orderNumber = view.getOrderNumberForRemoval();
+
+            // 5. Find order
+            Order orderToRemove = orders.stream()
+                    .filter(o -> o.getOrderNumber() == orderNumber)
+                    .findFirst()
+                    .orElse(null);
+
+            if (orderToRemove == null) {
+                view.displayError("Order not found.");
+                return;
+            }
+
+            // 6. Show summary before delete
+            view.displayOrderSummary(orderToRemove);
+
+            // 7. Confirm deletion
+            boolean confirm = view.promptForSave(
+                    "Are you sure you want to remove this order?"
+            );
+
+            if (!confirm) {
+                view.displayMessage("Removal cancelled.");
+                return;
+            }
+
+            // 8. Remove
+            orderService.removeOrder(orderNumber, date);
+
+            // 9. Success
+            view.displayMessage("Order removed successfully.");
+
+        } catch (Exception e) {
+            view.displayError("Remove error: " + e.getMessage());
         }
+    }
 
         public void exportAllData() {
         }
