@@ -12,6 +12,7 @@ import test.java.com.m3.flooringMastery.dao.OrderDAOSTUBImpl;
 import test.java.com.m3.flooringMastery.dao.ProductDAOSTUBImpl;
 import test.java.com.m3.flooringMastery.dao.TaxDAOSTUBImpl;
 
+import java.io.FileNotFoundException;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
@@ -64,9 +65,7 @@ class OrderServiceLayerImplTest {
         order.setProductType("Wood");
         order.setArea(new BigDecimal("100"));
 
-        assertThrows(TaxPersistenceException.class, () -> {
-            service.createOrder(order);
-        });
+        assertThrows(TaxPersistenceException.class, () -> service.createOrder(order));
     }
 
     // --------------------------------------------------
@@ -82,9 +81,7 @@ class OrderServiceLayerImplTest {
         order.setProductType("INVALID_PRODUCT");
         order.setArea(new BigDecimal("100"));
 
-        assertThrows(ProductPersistenceException.class, () -> {
-            service.createOrder(order);
-        });
+        assertThrows(ProductPersistenceException.class, () -> service.createOrder(order));
     }
 
     // --------------------------------------------------
@@ -178,7 +175,7 @@ class OrderServiceLayerImplTest {
 
     //Blank customer name should throw an exception
     @Test
-    void testCreateOrder_BlankCustomerName_ServiceLevel() throws Exception {
+    void testCreateOrder_BlankCustomerName_ServiceLevel() {
 
         Order order = new Order();
         order.setOrderDate(LocalDate.of(2026, 6, 6));
@@ -187,12 +184,11 @@ class OrderServiceLayerImplTest {
         order.setProductType("Wood");
         order.setArea(new BigDecimal("100"));
 
-        // Service should NOT crash (because UI should have handled it)
-        assertDoesNotThrow(() -> service.createOrder(order));
+        assertThrows(OrderPersistenceException.class, () -> service.createOrder(order));
     }
 
     @Test
-    void testCreateOrder_ValidData() throws Exception {
+    void testCreateOrder_ValidData() throws TaxPersistenceException, FileNotFoundException, ProductPersistenceException, OrderPersistenceException {
 
         Order order = new Order();
         order.setOrderDate(LocalDate.of(2026, 6, 6));
@@ -208,7 +204,7 @@ class OrderServiceLayerImplTest {
 
     //missing order in dao
     @Test
-    void testEditOrder_OrderNotFound() throws Exception {
+    void testEditOrder_OrderNotFound() {
 
         Order order = new Order();
         order.setOrderDate(LocalDate.of(2026, 6, 6));

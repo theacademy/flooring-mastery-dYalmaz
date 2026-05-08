@@ -6,8 +6,9 @@ import com.m3.flooringMastery.model.Order;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.io.File;
 import java.math.BigDecimal;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -15,42 +16,30 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class OrderDAOImplTest {
 
-    private final String TEST_DIR = "flooringMastery/Orders/";
-
+    private Path testDir;
     private OrderDAO dao;
-    // Copy fresh test data every time (CRITICAL)
 
     @BeforeEach
     void setUp() throws Exception {
-
-        File orderDir = new File(TEST_DIR);
-        orderDir.mkdirs();
-
-        // CLEAN ONLY order output files
-        for (File f : orderDir.listFiles()) {
-            if (f != null) f.delete();
-        }
-
-        // COPY from stable test data location
-        copyFile(
-                "flooringMastery/test-data/TestProducts.txt",
-                "flooringMastery/TestProducts.txt"
-        );
-
-        copyFile(
-                "flooringMastery/test-data/TestTaxes.txt",
-                "flooringMastery/TestTaxes.txt"
-        );
-
-        dao = new OrderDAOImpl(TEST_DIR);
+        testDir = Files.createTempDirectory("order-dao-test-");
+        dao = new OrderDAOImpl(testDir.toString() + java.io.File.separator);
     }
 
-    private void copyFile(String source, String dest) throws Exception {
-        java.nio.file.Files.copy(
-                java.nio.file.Paths.get(source),
-                java.nio.file.Paths.get(dest),
-                java.nio.file.StandardCopyOption.REPLACE_EXISTING
-        );
+    private Order buildOrder(LocalDate date, String customerName) {
+        Order order = new Order();
+        order.setOrderDate(date);
+        order.setCustomerName(customerName);
+        order.setState("CA");
+        order.setProductType("Wood");
+        order.setArea(new BigDecimal("120"));
+        order.setTaxRate(new BigDecimal("8.25"));
+        order.setCostPerSquareFoot(new BigDecimal("5.15"));
+        order.setLaborCostPerSquareFoot(new BigDecimal("4.75"));
+        order.setMaterialCost(new BigDecimal("618.00"));
+        order.setLaborCost(new BigDecimal("570.00"));
+        order.setTax(new BigDecimal("97.83"));
+        order.setTotal(new BigDecimal("1285.83"));
+        return order;
     }
 
     // --------------------------------------------------
@@ -59,22 +48,20 @@ public class OrderDAOImplTest {
     @Test
     void testAddOrder_CreatesAndSavesOrder() throws Exception {
 
-        Order order = new Order();
-        order.setOrderDate(LocalDate.of(2026, 6, 6));
-        order.setCustomerName("Test User");
-        order.setState("CA");
-        order.setProductType("Wood");
-        order.setArea(new BigDecimal("120"));
+        LocalDate date = LocalDate.of(2026, 6, 6);
+        Order order = buildOrder(date, "Test User");
 
         Order added = dao.addOrder(order);
 
         assertNotNull(added);
         assertTrue(added.getOrderNumber() > 0);
 
-        List<Order> orders = dao.getOrders(order.getOrderDate());
+        OrderDAO reloadedDao = new OrderDAOImpl(testDir.toString() + java.io.File.separator);
+        List<Order> orders = reloadedDao.getOrders(date);
 
         assertEquals(1, orders.size());
         assertEquals("Test User", orders.get(0).getCustomerName());
+        assertEquals(added.getOrderNumber(), orders.get(0).getOrderNumber());
     }
 
     // --------------------------------------------------
@@ -98,24 +85,17 @@ public class OrderDAOImplTest {
     void testRemoveOrder_RemovesOrder() throws Exception {
 
         LocalDate date = LocalDate.of(2026, 6, 6);
-
-        Order order = new Order();
-        order.setOrderDate(date);
-        order.setCustomerName("Remove Me");
-        order.setState("CA");
-        order.setProductType("Wood");
+        Order order = buildOrder(date, "Remove Me");
         order.setArea(new BigDecimal("150"));
 
         Order added = dao.addOrder(order);
 
         dao.removeOrder(date, added.getOrderNumber());
 
-        List<Order> updated = dao.getOrders(date);
+        OrderDAO reloadedDao = new OrderDAOImpl(testDir.toString() + java.io.File.separator);
+        List<Order> updated = reloadedDao.getOrders(date);
 
-        assertTrue(
-                updated.stream()
-                        .noneMatch(o -> o.getOrderNumber() == added.getOrderNumber())
-        );
+        assertTrue(updated.isEmpty());
     }
 
     // --------------------------------------------------
@@ -125,12 +105,7 @@ public class OrderDAOImplTest {
     void testEditOrder_UpdatesOrder() throws Exception {
 
         LocalDate date = LocalDate.of(2026, 6, 6);
-
-        Order order = new Order();
-        order.setOrderDate(date);
-        order.setCustomerName("Old Name");
-        order.setState("CA");
-        order.setProductType("Wood");
+        Order order = buildOrder(date, "Old Name");
         order.setArea(new BigDecimal("150"));
 
         Order added = dao.addOrder(order);
@@ -139,7 +114,8 @@ public class OrderDAOImplTest {
 
         dao.editOrder(added);
 
-        List<Order> updated = dao.getOrders(date);
+        OrderDAO reloadedDao = new OrderDAOImpl(testDir.toString() + java.io.File.separator);
+        List<Order> updated = reloadedDao.getOrders(date);
 
         assertTrue(
                 updated.stream()

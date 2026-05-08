@@ -10,7 +10,7 @@ import java.util.List;
 
 public class FlooringMasteryView {
 
-    private UserIO io;
+    private final UserIO io;
 
     public FlooringMasteryView(UserIO io) {
         this.io = io;
@@ -43,12 +43,12 @@ public class FlooringMasteryView {
 
         String state = io.readString("Please enter the state abbreviation: ");
 
-        while (state.trim().isEmpty() || state.length() != 2) {
+        while (state.trim().isEmpty() || !state.trim().matches("(?i)^[a-z]{2}$")) {
             io.displayMessage("Please enter a valid 2-letter state code (e.g. CA, TX).");
             state = io.readString("Please enter the state abbreviation: ");
         }
 
-        state = state.toUpperCase();
+        state = state.trim().toUpperCase();
         showProducts(products);
 
         Product selectedProduct = null;
@@ -102,7 +102,7 @@ public class FlooringMasteryView {
     }
 
 
-    public Order editOrderMenu(Order originalOrder) {
+    public Order editOrderMenu(Order originalOrder, List<Product> products) {
 
         Order updated = new Order();
 
@@ -110,59 +110,89 @@ public class FlooringMasteryView {
         updated.setOrderDate(originalOrder.getOrderDate());
 
         // ---------- CUSTOMER NAME ----------
-        String customerName = io.readString(
-                "Enter new customer name (" + originalOrder.getCustomerName() + "): "
-        );
+        while (true) {
+            String customerName = io.readString(
+                    "Enter new customer name (" + originalOrder.getCustomerName() + "): "
+            );
 
-        updated.setCustomerName(
-                customerName.isBlank()
-                        ? originalOrder.getCustomerName()
-                        : customerName
-        );
+            if (customerName.isBlank()) {
+                updated.setCustomerName(originalOrder.getCustomerName());
+                break;
+            }
+
+            if (nameValidation(customerName)) {
+                updated.setCustomerName(customerName);
+                break;
+            }
+
+            io.displayMessage("Invalid name. Please try again.");
+        }
 
         // ---------- STATE ----------
-        String state = io.readString(
-                "Enter new state (" + originalOrder.getState() + "): "
-        );
+        while (true) {
+            String state = io.readString(
+                    "Enter new state (" + originalOrder.getState() + "): "
+            );
 
-        if (state.isBlank()) {
-            updated.setState(originalOrder.getState());
-        } else {
-            updated.setState(state.toUpperCase());
+            if (state.isBlank()) {
+                updated.setState(originalOrder.getState());
+                break;
+            }
+
+            if (state.trim().matches("(?i)^[a-z]{2}$")) {
+                updated.setState(state.trim().toUpperCase());
+                break;
+            }
+
+            io.displayMessage("Please enter a valid 2-letter state code (e.g. CA, TX).");
         }
 
         // ---------- PRODUCT TYPE ----------
-        String productType = io.readString(
-                "Enter new product type (" + originalOrder.getProductType() + "): "
-        );
+        while (true) {
+            String productType = io.readString(
+                    "Enter new product type (" + originalOrder.getProductType() + "): "
+            );
 
-        if (productType.isBlank()) {
-            updated.setProductType(originalOrder.getProductType());
-        } else {
-            updated.setProductType(productType);
+            if (productType.isBlank()) {
+                updated.setProductType(originalOrder.getProductType());
+                break;
+            }
+
+            boolean validProduct = products.stream()
+                    .anyMatch(p -> p.getProductType().equalsIgnoreCase(productType));
+
+            if (validProduct) {
+                updated.setProductType(productType);
+                break;
+            }
+
+            io.displayMessage("Invalid product choice. Please try again.");
         }
 
         // ---------- AREA ----------
-        String areaInput = io.readString(
-                "Enter new area (" + originalOrder.getArea() + "): "
-        );
+        while (true) {
+            String areaInput = io.readString(
+                    "Enter new area (" + originalOrder.getArea() + "): "
+            );
 
-        if (areaInput.isBlank()) {
-            updated.setArea(originalOrder.getArea());
-        } else {
+            if (areaInput.isBlank()) {
+                updated.setArea(originalOrder.getArea());
+                break;
+            }
+
             try {
-                BigDecimal area = new BigDecimal(areaInput);
+                BigDecimal area = new BigDecimal(areaInput.trim());
 
                 if (area.compareTo(BigDecimal.valueOf(100)) < 0) {
-                    io.displayMessage("Area must be at least 100 sq ft. Keeping old value.");
-                    updated.setArea(originalOrder.getArea());
-                } else {
-                    updated.setArea(area);
+                    io.displayMessage("Area must be at least 100 sq ft.");
+                    continue;
                 }
 
+                updated.setArea(area);
+                break;
+
             } catch (NumberFormatException e) {
-                io.displayMessage("Invalid number. Keeping previous area.");
-                updated.setArea(originalOrder.getArea());
+                io.displayMessage("Invalid number. Please try again.");
             }
         }
 

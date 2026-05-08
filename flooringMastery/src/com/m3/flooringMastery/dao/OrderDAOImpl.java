@@ -159,6 +159,8 @@ public class OrderDAOImpl implements OrderDAO {
 
         if (list.isEmpty()) {
             orders.remove(date);
+            deleteOrdersFile(date);
+            return;
         }
 
         writeOrders();
@@ -283,34 +285,8 @@ public class OrderDAOImpl implements OrderDAO {
 
     public void writeOrders() throws OrderPersistenceException {
 
-        File directory = new File(ORDER_DIR);
-
-        if (!directory.exists()) {
-            directory.mkdirs();
-        }
-
         for (Map.Entry<LocalDate, List<Order>> entry : orders.entrySet()) {
-
-            LocalDate date = entry.getKey();
-
-            String fileName = "Orders_" +
-                    date.format(DateTimeFormatter.ofPattern("MMddyyyy")) +
-                    ".txt";
-
-            File file = new File(directory, fileName);
-
-            try (PrintWriter out = new PrintWriter(new FileWriter(file))) {
-
-                for (Order order : entry.getValue()) {
-
-                    out.println(marshallOrder(order));
-                }
-
-            } catch (IOException e) {
-                throw new OrderPersistenceException(
-                        "Could not save order data: " + e.getMessage(), e
-                );
-            }
+            writeOrdersForDate(entry.getKey(), entry.getValue());
         }
     }
 
@@ -342,6 +318,17 @@ public class OrderDAOImpl implements OrderDAO {
 
         } catch (IOException e) {
             throw new OrderPersistenceException("Could not write file: " + fileName, e);
+        }
+    }
+
+    private void deleteOrdersFile(LocalDate date) throws OrderPersistenceException {
+        File file = new File(
+                ORDER_DIR,
+                "Orders_" + date.format(DateTimeFormatter.ofPattern("MMddyyyy")) + ".txt"
+        );
+
+        if (file.exists() && !file.delete()) {
+            throw new OrderPersistenceException("Could not delete file: " + file.getName());
         }
     }
 

@@ -8,7 +8,6 @@ import com.m3.flooringMastery.service.OrderServiceLayer;
 import com.m3.flooringMastery.view.FlooringMasteryView;
 
 import java.io.FileNotFoundException;
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -23,7 +22,7 @@ public class FlooringController {
 
         public void run() {
             boolean keepGoing = true;
-            int menuSelection = 0;
+            int menuSelection;
             view.displayBanner();
 
             try {
@@ -138,7 +137,7 @@ public class FlooringController {
             }
 
             // 6. Get edited version (still raw, NOT recalculated)
-            Order updated = view.editOrderMenu(original);
+            Order updated = view.editOrderMenu(original, orderService.getAllProducts());
 
             // 7. Recalculate + validate via SERVICE (IMPORTANT)
             orderService.editOrder(updated);

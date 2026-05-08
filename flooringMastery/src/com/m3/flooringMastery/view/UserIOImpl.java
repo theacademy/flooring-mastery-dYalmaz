@@ -61,19 +61,32 @@ private final Scanner sc = new Scanner(System.in);
 
     @Override
     public java.math.BigDecimal readBigDecimal(String prompt) {
-        System.out.println(prompt);
-        return new BigDecimal(sc.nextLine());
+        while (true) {
+            try {
+                System.out.println(prompt);
+                return new BigDecimal(sc.nextLine().trim());
+            } catch (NumberFormatException e) {
+                System.out.println("Invalid number. Please try again.");
+            }
+        }
     }
 
     @Override
     public java.math.BigDecimal readBigDecimal(String prompt, java.math.BigDecimal min) {
-        System.out.println(prompt);
-        BigDecimal userBD = new BigDecimal(sc.nextLine());
-        while(userBD.compareTo(min)<0){
-            System.out.println(prompt);
-            userBD = new BigDecimal(sc.nextLine());
+        while (true) {
+            try {
+                System.out.println(prompt);
+                BigDecimal userBD = new BigDecimal(sc.nextLine().trim());
+
+                if (userBD.compareTo(min) >= 0) {
+                    return userBD;
+                }
+            } catch (NumberFormatException e) {
+                // keep looping below
+            }
+
+            System.out.println("Invalid number. Please enter a value of at least " + min + ".");
         }
-        return userBD;
     }
 
 
