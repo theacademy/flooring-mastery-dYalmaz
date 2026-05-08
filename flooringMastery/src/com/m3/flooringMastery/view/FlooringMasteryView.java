@@ -102,26 +102,94 @@ public class FlooringMasteryView {
     }
 
 
-    public Order editOrderMenu(Order order) {
-        String customerName = io.readString("Enter new customer name (" + order.getCustomerName() + "): ");
-        String state = io.readString("Enter new state (" + order.getState() + "): ");
-        String productType = io.readString("Enter new product type (" + order.getProductType() + "): ");
-        BigDecimal area = io.readBigDecimal("Enter new area (" + order.getArea() + "): ");
+    public Order editOrderMenu(Order originalOrder) {
 
-        if (!customerName.trim().isEmpty()) {
-            order.setCustomerName(customerName);
-        }
-        if (!state.trim().isEmpty()) {
-            order.setState(state);
-        }
-        if (!productType.trim().isEmpty()) {
-            order.setProductType(productType);
-        }
-        if (area.compareTo(BigDecimal.ZERO) > 0) {
-            order.setArea(area);
+        // NEW ORDER COPY (do not mutate original directly)
+        Order updated = new Order();
+
+        updated.setOrderNumber(originalOrder.getOrderNumber());
+        updated.setOrderDate(originalOrder.getOrderDate());
+
+        boolean stateChanged = false;
+        boolean productChanged = false;
+        boolean areaChanged = false;
+
+        // ---------- CUSTOMER NAME ----------
+        String customerName = io.readString(
+                "Enter new customer name (" + originalOrder.getCustomerName() + "): "
+        );
+
+        updated.setCustomerName(
+                customerName.isBlank()
+                        ? originalOrder.getCustomerName()
+                        : customerName
+        );
+
+        // ---------- STATE ----------
+        String state = io.readString(
+                "Enter new state (" + originalOrder.getState() + "): "
+        );
+
+        if (state.isBlank()) {
+            updated.setState(originalOrder.getState());
+        } else {
+            updated.setState(state.toUpperCase());
+            stateChanged = true;
         }
 
-        return order;
+        // ---------- PRODUCT TYPE ----------
+        String productType = io.readString(
+                "Enter new product type (" + originalOrder.getProductType() + "): "
+        );
+
+        if (productType.isBlank()) {
+            updated.setProductType(originalOrder.getProductType());
+        } else {
+            updated.setProductType(productType);
+            productChanged = true;
+        }
+
+        // ---------- AREA ----------
+        String areaInput = io.readString(
+                "Enter new area (" + originalOrder.getArea() + "): "
+        );
+
+        if (areaInput.isBlank()) {
+            updated.setArea(originalOrder.getArea());
+        } else {
+            try {
+                BigDecimal area = new BigDecimal(areaInput);
+
+                if (area.compareTo(BigDecimal.valueOf(100)) < 0) {
+                    io.displayMessage("Area must be at least 100 sq ft. Keeping old value.");
+                    updated.setArea(originalOrder.getArea());
+                } else {
+                    updated.setArea(area);
+                    areaChanged = true;
+                }
+
+            } catch (NumberFormatException e) {
+                io.displayMessage("Invalid number. Keeping previous area.");
+                updated.setArea(originalOrder.getArea());
+            }
+        }
+
+        // ---------- COPY ALL FINANCIAL FIELDS (TEMPORARY - WILL BE RECOMPUTED) ----------
+        updated.setTaxRate(originalOrder.getTaxRate());
+        updated.setCostPerSquareFoot(originalOrder.getCostPerSquareFoot());
+        updated.setLaborCostPerSquareFoot(originalOrder.getLaborCostPerSquareFoot());
+
+        // IMPORTANT: do NOT copy these blindly — service will recalc
+        updated.setMaterialCost(null);
+        updated.setLaborCost(null);
+        updated.setTax(null);
+        updated.setTotal(null);
+
+        // ---------- RETURN UPDATED ORDER ----------
+        // Controller/service MUST call:
+        // service.recalculateOrder(updated);
+
+        return updated;
     }
 
     public void removeOrder() {
@@ -233,5 +301,9 @@ public class FlooringMasteryView {
 
     public void displayMessage(String s) {
         io.displayMessage(s);
+    }
+
+    public int getUserOrderNumber() {
+        return io.readInt("Please enter the order number: ");
     }
 }

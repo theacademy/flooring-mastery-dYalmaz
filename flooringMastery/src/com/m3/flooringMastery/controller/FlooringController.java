@@ -9,6 +9,7 @@ import com.m3.flooringMastery.view.FlooringMasteryView;
 
 import java.io.FileNotFoundException;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 
 public class FlooringController {
@@ -104,13 +105,45 @@ public class FlooringController {
         } while (hasErrors);
     }
 
-        public void editOrder() throws OrderPersistenceException {
+    public void editOrder() {
 
+        try {
+            LocalDate date = view.getDateFromUser();
+
+            List<Order> orders = orderService.getOrdersByDate(date);
+
+            if (orders.isEmpty()) {
+                view.displayError("No orders found for that date.");
+                return;
+            }
+
+            view.displayOrders(orders);
+
+            int orderNumber = view.getUserOrderNumber();
+
+            Order original = orders.stream()
+                    .filter(o -> o.getOrderNumber() == orderNumber)
+                    .findFirst()
+                    .orElse(null);
+
+            if (original == null) {
+                view.displayError("Order not found.");
+                return;
+            }
+
+            Order updated = view.editOrderMenu(original);
+            orderService.recalculateOrder(updated);
+            orderService.editOrder(updated);
+
+            view.displayMessage("Order updated successfully.");
+
+        } catch (Exception e) {
+            view.displayError(e.getMessage());
         }
+    }
 
         public void removeOrder() throws OrderPersistenceException {
             view.removeOrder();
-
         }
 
         public void exportAllData() {

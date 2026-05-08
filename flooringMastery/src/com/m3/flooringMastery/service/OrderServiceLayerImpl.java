@@ -24,32 +24,34 @@ public class OrderServiceLayerImpl implements OrderServiceLayer {
     public Order createOrder(Order order)
             throws TaxPersistenceException, ProductPersistenceException, OrderPersistenceException, FileNotFoundException {
 
-
-        BigDecimal taxRate = taxDAO.getTaxRate(order.getState());
+        // 1. Validate state + tax
+        BigDecimal taxRate = taxDAO.getTaxRate(order.getState().toUpperCase());
 
         if (taxRate == null) {
-            throw new TaxPersistenceException("Invalid state: " + order.getState());
+            throw new TaxPersistenceException("We do not operate in state: " + order.getState());
         }
 
         order.setTaxRate(taxRate);
 
-
+        // 2. Validate product
         Product product = productDAO.getAllProducts().stream()
                 .filter(p -> p.getProductType().equalsIgnoreCase(order.getProductType()))
                 .findFirst()
-                .orElseThrow(() -> new ProductPersistenceException("Invalid product: " + order.getProductType()));
+                .orElseThrow(() ->
+                        new ProductPersistenceException("Invalid product: " + order.getProductType())
+                );
 
-
+        // 3. Set pricing
         order.setCostPerSquareFoot(product.getCostPerSquareFoot());
         order.setLaborCostPerSquareFoot(product.getLaborCostPerSquareFoot());
 
-
+        // 4. Calculate costs (SAFE: now all inputs guaranteed non-null)
         order.calculateCosts(
                 order.getCostPerSquareFoot(),
                 order.getLaborCostPerSquareFoot()
         );
 
-        // 5. Assign order number safely (per date)
+        // 5. Generate order ID per date
         List<Order> existingOrders = orderDAO.getOrders(order.getOrderDate());
 
         int nextId = existingOrders.stream()
@@ -93,6 +95,32 @@ public class OrderServiceLayerImpl implements OrderServiceLayer {
     @Override
     public BigDecimal getTaxRate(String state) throws TaxPersistenceException {
         return taxDAO.getTaxRate(state);
+    }
+
+    @Override
+    public void recalculateOrder(Order updatedOrder) {
+        try {
+            BigDecimal taxRate = taxDAO.getTaxRate(updatedOrder.getState());
+            updatedOrder.setTaxRate(taxRate);
+
+            Product product = productDAO.getAllProducts().stream()
+                    .filter(p -> p.getProductType().equalsIgnoreCase(updatedOrder.getProductType()))
+                    .findFirst()
+                    .orElseThrow(() -> new ProductPersistenceException("Invalid product: " + updatedOrder.getProductType()));
+
+            updatedOrder.setCostPerSquareFoot(product.getCostPerSquareFoot());
+            updatedOrder.setLaborCostPerSquareFoot(product.getLaborCostPerSquareFoot());
+
+            updatedOrder.calculateCosts(
+                    updatedOrder.getCostPerSquareFoot(),
+                    updatedOrder.getLaborCostPerSquareFoot()
+            );
+
+        } catch (TaxPersistenceException | ProductPersistenceException e) {
+            // Log the error and rethrow as a runtime exception
+            System.err.println("Error recalculating order: " + e.getMessage());
+            throw new RuntimeException("Failed to recalculate order costs", e);
+        }
     }
 
 

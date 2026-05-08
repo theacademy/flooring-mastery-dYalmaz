@@ -19,4 +19,5 @@ public interface OrderServiceLayer {
         public void exportAllData() throws OrderPersistenceException;
         List<Product> getAllProducts() throws ProductPersistenceException;
         BigDecimal getTaxRate(String state) throws TaxPersistenceException;
+        void recalculateOrder(Order updatedOrder);
 }
