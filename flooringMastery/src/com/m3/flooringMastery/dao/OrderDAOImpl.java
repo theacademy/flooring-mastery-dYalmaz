@@ -18,12 +18,11 @@ public class OrderDAOImpl implements OrderDAO {
 
     @Override
     public List<Order> getOrders(LocalDate date) throws OrderPersistenceException {
+        if (orders.isEmpty()) {
+            loadOrders();
+        }
 
-        loadOrders();
-
-        return new ArrayList<>(
-                orders.getOrDefault(date, new ArrayList<>())
-        );
+        return new ArrayList<>(orders.getOrDefault(date, new ArrayList<>()));
     }
 
     private Order unmarshallOrder(String line) {
@@ -69,8 +68,6 @@ public class OrderDAOImpl implements OrderDAO {
                 order.getTax() + DELIMETER +
                 order.getTotal();
     }
-
-
 
     @Override
     public Order addOrder(Order order) throws OrderPersistenceException {
@@ -118,38 +115,23 @@ public class OrderDAOImpl implements OrderDAO {
 
     @Override
     public void removeOrder(LocalDate date, int orderNumber)
-            throws OrderPersistenceException, FileNotFoundException {
+            throws OrderPersistenceException {
 
         loadOrders();
 
         List<Order> list = orders.get(date);
 
-        if (list == null) {
-            return;
-        }
+        if (list == null) return;
 
-        list.removeIf(o -> o.getOrderNumber() == orderNumber);
+        boolean removed = list.removeIf(o -> o.getOrderNumber() == orderNumber);
 
-        // If no orders left → delete file
+        if (!removed) return;
+
         if (list.isEmpty()) {
-
             orders.remove(date);
-
-            String fileName = ORDER_DIR + "Orders_" +
-                    date.format(DateTimeFormatter.ofPattern("MMddyyyy")) +
-                    ".txt";
-
-            File file = new File(fileName);
-
-            if (file.exists()) {
-                file.delete();
-            }
-
-        } else {
-
-            // otherwise rewrite updated file
-            writeOrdersForDate(date, list);
         }
+
+        writeOrders();
     }
 
     @Override
