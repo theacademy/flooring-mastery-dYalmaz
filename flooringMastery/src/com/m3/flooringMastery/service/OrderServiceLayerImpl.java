@@ -24,6 +24,7 @@ public class OrderServiceLayerImpl implements OrderServiceLayer {
     public void createOrder(Order order)
             throws TaxPersistenceException, ProductPersistenceException, OrderPersistenceException, FileNotFoundException {
 
+        validateOrder(order);
         finalizeOrder(order);
 
         List<Order> existingOrders = orderDAO.getOrders(order.getOrderDate());
@@ -43,11 +44,13 @@ public class OrderServiceLayerImpl implements OrderServiceLayer {
             throws OrderPersistenceException, FileNotFoundException {
 
         try {
-            finalizeOrder(order);   // ALWAYS recompute everything
+            validateOrder(order);
+            finalizeOrder(order);
+
             orderDAO.editOrder(order);
 
         } catch (TaxPersistenceException | ProductPersistenceException e) {
-            throw new RuntimeException("Edit failed: " + e.getMessage(), e);
+            throw new OrderPersistenceException("Edit failed: " + e.getMessage(), e);
         }
     }
 
@@ -82,17 +85,13 @@ public class OrderServiceLayerImpl implements OrderServiceLayer {
     private void finalizeOrder(Order order)
             throws TaxPersistenceException, ProductPersistenceException {
 
-        // tax
         order.setState(order.getState().toUpperCase());
-        BigDecimal taxRate = taxDAO.getTaxRate(order.getState());
 
+        BigDecimal taxRate = taxDAO.getTaxRate(order.getState());
         if (taxRate == null) {
             throw new TaxPersistenceException("We do not operate in state: " + order.getState());
         }
 
-        order.setTaxRate(taxRate);
-
-        // product
         Product product = productDAO.getAllProducts().stream()
                 .filter(p -> p.getProductType().equalsIgnoreCase(order.getProductType()))
                 .findFirst()
@@ -100,15 +99,60 @@ public class OrderServiceLayerImpl implements OrderServiceLayer {
                         new ProductPersistenceException("Invalid product: " + order.getProductType())
                 );
 
-        order.setCostPerSquareFoot(product.getCostPerSquareFoot());
-        order.setLaborCostPerSquareFoot(product.getLaborCostPerSquareFoot());
+        BigDecimal costPerSqFt = product.getCostPerSquareFoot();
+        BigDecimal laborCostPerSqFt = product.getLaborCostPerSquareFoot();
 
-        // calculation (GUARANTEED SAFE NOW)
-        order.calculateCosts(
-                order.getCostPerSquareFoot(),
-                order.getLaborCostPerSquareFoot()
-        );
+        if (costPerSqFt == null || laborCostPerSqFt == null) {
+            throw new ProductPersistenceException("Product pricing data is missing");
+        }
+
+        order.setTaxRate(taxRate);
+        order.setCostPerSquareFoot(costPerSqFt);
+        order.setLaborCostPerSquareFoot(laborCostPerSqFt);
+
+        calculateAndSetCosts(order);
     }
+
+    private void calculateAndSetCosts(Order order) {
+
+        BigDecimal area = order.getArea();
+        BigDecimal materialCost = area.multiply(order.getCostPerSquareFoot());
+        BigDecimal laborCost = area.multiply(order.getLaborCostPerSquareFoot());
+
+        BigDecimal taxRate = order.getTaxRate();
+
+        BigDecimal tax = materialCost.add(laborCost)
+                .multiply(taxRate)
+                .divide(new BigDecimal("100"));
+
+        BigDecimal total = materialCost.add(laborCost).add(tax);
+
+        order.setMaterialCost(materialCost);
+        order.setLaborCost(laborCost);
+        order.setTax(tax);
+        order.setTotal(total);
+    }
+
+    private void validateOrder(Order order) throws OrderPersistenceException {
+
+        if (order.getCustomerName() == null || order.getCustomerName().trim().isEmpty()) {
+            throw new OrderPersistenceException("Customer name cannot be blank");
+        }
+
+        if (order.getArea() == null || order.getArea().compareTo(new BigDecimal("100")) < 0) {
+            throw new OrderPersistenceException("Area must be at least 100 sq ft");
+        }
+
+        if (order.getState() == null || order.getState().trim().isEmpty()) {
+            throw new OrderPersistenceException("State is required");
+        }
+
+        if (order.getProductType() == null || order.getProductType().trim().isEmpty()) {
+            throw new OrderPersistenceException("Product type is required");
+        }
+    }
+
+
 
 
 }

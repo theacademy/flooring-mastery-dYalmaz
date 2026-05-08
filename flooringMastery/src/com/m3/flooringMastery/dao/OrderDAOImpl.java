@@ -10,10 +10,17 @@ import java.util.*;
 
 public class OrderDAOImpl implements OrderDAO {
 
-    public static final String ORDER_DIR = "flooringMastery/Orders/";
+    String ORDER_DIR = "flooringMastery/Orders/";
     Map<LocalDate, List<Order>> orders = new HashMap<>();
     public static final String DELIMETER = ":;:";
         public static final String BACKUP_DIR = "flooringMastery/Backup/";
+
+    public OrderDAOImpl(String s) {
+        ORDER_DIR = s;
+    }
+
+    public OrderDAOImpl() {
+    }
 
 
     @Override
@@ -25,14 +32,27 @@ public class OrderDAOImpl implements OrderDAO {
         return new ArrayList<>(orders.getOrDefault(date, new ArrayList<>()));
     }
 
+    private String safeDecimal(BigDecimal val) {
+        return val == null ? "0.00" : val.toString();
+    }
+
+    private String safeInt(Integer val) {
+        return val == null ? "0" : val.toString();
+    }
+
+    private BigDecimal safeBigDecimal(String value) {
+        if (value == null || value.isBlank()) {
+            return BigDecimal.ZERO;
+        }
+        return new BigDecimal(value);
+    }
+
     private Order unmarshallOrder(String line) {
 
-        String[] tokens = line.split(DELIMETER);
+        String[] tokens = line.split(DELIMETER, -1); // IMPORTANT FIX
 
         if (tokens.length < 12) {
-            throw new IllegalArgumentException(
-                    "Corrupt order line: " + line
-            );
+            throw new IllegalArgumentException("Corrupt order line: " + line);
         }
 
         Order order = new Order();
@@ -40,33 +60,41 @@ public class OrderDAOImpl implements OrderDAO {
         order.setOrderNumber(Integer.parseInt(tokens[0]));
         order.setCustomerName(tokens[1]);
         order.setState(tokens[2]);
-        order.setTaxRate(new BigDecimal(tokens[3]));
+        order.setTaxRate(safeBigDecimal(tokens[3]));
         order.setProductType(tokens[4]);
-        order.setArea(new BigDecimal(tokens[5]));
-        order.setCostPerSquareFoot(new BigDecimal(tokens[6]));
-        order.setLaborCostPerSquareFoot(new BigDecimal(tokens[7]));
-        order.setMaterialCost(new BigDecimal(tokens[8]));
-        order.setLaborCost(new BigDecimal(tokens[9]));
-        order.setTax(new BigDecimal(tokens[10]));
-        order.setTotal(new BigDecimal(tokens[11]));
+        order.setArea(safeBigDecimal(tokens[5]));
+        order.setCostPerSquareFoot(safeBigDecimal(tokens[6]));
+        order.setLaborCostPerSquareFoot(safeBigDecimal(tokens[7]));
+        order.setMaterialCost(safeBigDecimal(tokens[8]));
+        order.setLaborCost(safeBigDecimal(tokens[9]));
+        order.setTax(safeBigDecimal(tokens[10]));
+        order.setTotal(safeBigDecimal(tokens[11]));
 
         return order;
     }
 
+    private String safe(Object o) {
+        if (o == null) {
+            return "0"; // or throw depending on your rules
+        }
+        return o.toString();
+    }
+
+
     private String marshallOrder(Order order) {
 
-        return order.getOrderNumber() + DELIMETER +
-                order.getCustomerName() + DELIMETER +
-                order.getState() + DELIMETER +
-                order.getTaxRate() + DELIMETER +
-                order.getProductType() + DELIMETER +
-                order.getArea() + DELIMETER +
-                order.getCostPerSquareFoot() + DELIMETER +
-                order.getLaborCostPerSquareFoot() + DELIMETER +
-                order.getMaterialCost() + DELIMETER +
-                order.getLaborCost() + DELIMETER +
-                order.getTax() + DELIMETER +
-                order.getTotal();
+        return safe(order.getOrderNumber()) + DELIMETER +
+                safe(order.getCustomerName()) + DELIMETER +
+                safe(order.getState()) + DELIMETER +
+                safe(order.getTaxRate()) + DELIMETER +
+                safe(order.getProductType()) + DELIMETER +
+                safe(order.getArea()) + DELIMETER +
+                safe(order.getCostPerSquareFoot()) + DELIMETER +
+                safe(order.getLaborCostPerSquareFoot()) + DELIMETER +
+                safe(order.getMaterialCost()) + DELIMETER +
+                safe(order.getLaborCost()) + DELIMETER +
+                safe(order.getTax()) + DELIMETER +
+                safe(order.getTotal());
     }
 
     @Override
@@ -97,6 +125,7 @@ public class OrderDAOImpl implements OrderDAO {
     @Override
     public void editOrder(Order order) throws OrderPersistenceException, FileNotFoundException {
 
+        orders.clear();
         loadOrders();
 
         List<Order> list = orders.get(order.getOrderDate());
@@ -117,6 +146,7 @@ public class OrderDAOImpl implements OrderDAO {
     public void removeOrder(LocalDate date, int orderNumber)
             throws OrderPersistenceException {
 
+        orders.clear();
         loadOrders();
 
         List<Order> list = orders.get(date);
@@ -144,9 +174,8 @@ public class OrderDAOImpl implements OrderDAO {
         File exportFile = new File(backupDir, "DataExport.txt");
         try (PrintWriter out = new PrintWriter(new FileWriter(exportFile))) {
             out.println(
-                    "OrderNumber,CustomerName,State,TaxRate,ProductType," +
-                            "Area,CostPerSquareFoot,LaborCostPerSquareFoot," +
-                            "MaterialCost,LaborCost,Tax,Total,OrderDate"
+                    "OrderNumber:;:CustomerName:;:State:;:TaxRate:;:ProductType:;:Area:;:" +
+                            "CostPerSquareFoot:;:LaborCostPerSquareFoot:;:MaterialCost:;:LaborCost:;:Tax:;:Total"
             );
             for (Map.Entry<LocalDate, List<Order>> entry : orders.entrySet()) {
                 LocalDate date = entry.getKey();
@@ -272,8 +301,6 @@ public class OrderDAOImpl implements OrderDAO {
 
             try (PrintWriter out = new PrintWriter(new FileWriter(file))) {
 
-                out.println("OrderNumber,CustomerName,State,TaxRate,ProductType,Area,CostPerSquareFoot,LaborCostPerSquareFoot,MaterialCost,LaborCost,Tax,Total");
-
                 for (Order order : entry.getValue()) {
 
                     out.println(marshallOrder(order));
@@ -304,9 +331,10 @@ public class OrderDAOImpl implements OrderDAO {
 
         try (PrintWriter out = new PrintWriter(new FileWriter(file))) {
 
-            out.println("OrderNumber,CustomerName,State,TaxRate,ProductType,Area,"
-                    + "CostPerSquareFoot,LaborCostPerSquareFoot,MaterialCost,"
-                    + "LaborCost,Tax,Total");
+            out.println(
+                    "OrderNumber:;:CustomerName:;:State:;:TaxRate:;:ProductType:;:Area:;:" +
+                            "CostPerSquareFoot:;:LaborCostPerSquareFoot:;:MaterialCost:;:LaborCost:;:Tax:;:Total"
+            );
 
             for (Order order : orders) {
                 out.println(marshallOrder(order));

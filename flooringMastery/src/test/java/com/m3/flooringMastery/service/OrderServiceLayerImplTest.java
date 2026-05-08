@@ -16,8 +16,6 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 
 class OrderServiceLayerImplTest {
 
@@ -177,4 +175,145 @@ class OrderServiceLayerImplTest {
         assertEquals(new BigDecimal("100"), order.getArea());
         assertNotNull(order.getTotal());
     }
+
+    //Blank customer name should throw an exception
+    @Test
+    void testCreateOrder_BlankCustomerName_ServiceLevel() throws Exception {
+
+        Order order = new Order();
+        order.setOrderDate(LocalDate.of(2026, 6, 6));
+        order.setCustomerName(""); // invalid input from user
+        order.setState("CA");
+        order.setProductType("Wood");
+        order.setArea(new BigDecimal("100"));
+
+        // Service should NOT crash (because UI should have handled it)
+        assertDoesNotThrow(() -> service.createOrder(order));
+    }
+
+    @Test
+    void testCreateOrder_ValidData() throws Exception {
+
+        Order order = new Order();
+        order.setOrderDate(LocalDate.of(2026, 6, 6));
+        order.setCustomerName("Cengiz");
+        order.setState("CA");
+        order.setProductType("Wood");
+        order.setArea(new BigDecimal("100"));
+
+        service.createOrder(order);
+
+        assertNotNull(order.getTotal());
+    }
+
+    //missing order in dao
+    @Test
+    void testEditOrder_OrderNotFound() throws Exception {
+
+        Order order = new Order();
+        order.setOrderDate(LocalDate.of(2026, 6, 6));
+        order.setOrderNumber(999); // doesn't exist in stub
+        order.setCustomerName("Updated");
+        order.setState("CA");
+        order.setProductType("Wood");
+        order.setArea(new BigDecimal("100"));
+
+        // should NOT crash, just no update
+        assertDoesNotThrow(() -> service.editOrder(order));
+    }
+
+    // removing non-existent order should not throw an exception
+    @Test
+    void testRemoveOrder_NotFound() throws Exception {
+
+        LocalDate date = LocalDate.of(2026, 6, 6);
+
+        service.removeOrder(9999, date);
+
+        List<Order> orders = service.getOrdersByDate(date);
+
+        assertTrue(orders.isEmpty() || orders.stream()
+                .noneMatch(o -> o.getOrderNumber() == 9999));
+    }
+
+    // get orders empty date
+    @Test
+    void testGetOrders_EmptyDate() throws Exception {
+
+        LocalDate date = LocalDate.of(2099, 1, 1);
+
+        List<Order> orders = service.getOrdersByDate(date);
+
+        assertTrue(orders.isEmpty());
+    }
+
+    //verify recalculation on edit
+    @Test
+    void testEditOrder_Recalculation() throws Exception {
+
+        Order order = new Order();
+        order.setOrderDate(LocalDate.of(2026, 6, 6));
+        order.setCustomerName("Cengiz");
+        order.setState("CA");
+        order.setProductType("Wood");
+        order.setArea(new BigDecimal("100"));
+
+        service.createOrder(order);
+
+        BigDecimal originalTotal = order.getTotal();
+
+        order.setArea(new BigDecimal("200"));
+        service.editOrder(order);
+
+        assertNotEquals(originalTotal, order.getTotal());
+    }
+
+    //verify order number is auto-incremented
+    @Test
+    void testOrderNumberIncrements() throws Exception {
+
+        Order order1 = new Order();
+        order1.setOrderDate(LocalDate.of(2026, 6, 6));
+        order1.setCustomerName("A");
+        order1.setState("CA");
+        order1.setProductType("Wood");
+        order1.setArea(new BigDecimal("100"));
+
+        Order order2 = new Order();
+        order2.setOrderDate(LocalDate.of(2026, 6, 6));
+        order2.setCustomerName("B");
+        order2.setState("CA");
+        order2.setProductType("Wood");
+        order2.setArea(new BigDecimal("100"));
+
+        service.createOrder(order1);
+        service.createOrder(order2);
+
+        assertTrue(order2.getOrderNumber() > order1.getOrderNumber());
+    }
+
+    //multiple operator
+    @Test
+    void testMultipleOperations() throws Exception {
+
+        LocalDate date = LocalDate.of(2026, 6, 6);
+
+        for (int i = 0; i < 10; i++) {
+            Order order = new Order();
+            order.setOrderDate(date);
+            order.setCustomerName("User" + i);
+            order.setState("CA");
+            order.setProductType("Wood");
+            order.setArea(new BigDecimal("100"));
+
+            service.createOrder(order);
+        }
+
+        List<Order> orders = service.getOrdersByDate(date);
+
+        assertEquals(10, orders.size());
+    }
+
+
+
 }
