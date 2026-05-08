@@ -10,7 +10,7 @@ import java.util.*;
 
 public class ProductDAOImpl implements ProductDAO {
 
-    public static final String PRODUCT_FILE = "Data/Products.txt";
+    public static final String PRODUCT_FILE = "flooringMastery/Data/Products.txt";
     public static final String DELIMITER = ",";
     Map<String, Product> products = new HashMap<>();
 
@@ -41,7 +41,7 @@ public class ProductDAOImpl implements ProductDAO {
         if (products.containsKey(productType)) {
             return products.get(productType).getProductType();
         } else {
-            throw new ProductPersistenceException("No such product type.", new FileNotFoundException());
+            throw new ProductPersistenceException("No such product type.");
         }
     }
 
@@ -53,27 +53,40 @@ public class ProductDAOImpl implements ProductDAO {
     }
 
     private void loadProducts() throws ProductPersistenceException {
+
         Scanner scanner;
 
         try {
             scanner = new Scanner(new BufferedReader(new FileReader(PRODUCT_FILE)));
         } catch (FileNotFoundException e) {
-            throw new ProductPersistenceException("Could not load product data into memory.", e);
+            throw new ProductPersistenceException("Could not load product data into memory.");
         }
 
-        String currentLine;
-        String[] currentTokens;
+        products.clear();
+
+        // skip header
+        if (scanner.hasNextLine()) {
+            scanner.nextLine();
+        }
 
         while (scanner.hasNextLine()) {
-            currentLine = scanner.nextLine();
-            currentTokens = currentLine.split(DELIMITER);
 
-            Product productFromFile = new Product(currentTokens[0]);
-            productFromFile.setCostPerSquareFoot(new BigDecimal(currentTokens[1]));
-            productFromFile.setLaborCostPerSquareFoot(new BigDecimal(currentTokens[2]));
+            String currentLine = scanner.nextLine();
+            String[] currentTokens = currentLine.split(DELIMITER);
 
-            products.put(productFromFile.getProductType(), productFromFile);
+            String productType = currentTokens[0];
+            BigDecimal costPerSquareFoot = new BigDecimal(currentTokens[1]);
+            BigDecimal laborCostPerSquareFoot = new BigDecimal(currentTokens[2]);
+
+            Product productFromFile = new Product(
+                    productType,
+                    costPerSquareFoot,
+                    laborCostPerSquareFoot
+            );
+
+            products.put(productType, productFromFile);
         }
+
         scanner.close();
     }
 

@@ -5,12 +5,12 @@ import com.m3.flooringMastery.model.Product;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 public class FlooringMasteryView {
 
     private UserIO io;
-    private List<Product> products;
 
     public FlooringMasteryView(UserIO io) {
         this.io = io;
@@ -31,52 +31,54 @@ public class FlooringMasteryView {
         return io.readDate("Please enter a date (MM/DD/YYYY): ");
     }
 
-    public Order getOrderFromUser() {
+    public Order getOrderFromUser(List<Product> products) {
+
         LocalDate date = io.readDate("Please enter the order date (MM/DD/YYYY): ");
-//        while(!dateValidation(date.toString())){
-//            io.displayMessage("Invalid date.");
-//            date = io.readDate("Please enter the order date (MM/DD/YYYY): ");
-//        }
 
         String customerName = io.readString("Please enter the customer's name: ");
-        while(!nameValidation(customerName)){
-            io.displayMessage("Invalid name. Please use letters, numbers, spaces, and common punctuation only.");
+        while (!nameValidation(customerName)) {
+            io.displayMessage("Invalid name. Please try again.");
             customerName = io.readString("Please enter the customer's name: ");
         }
 
-        String state = io.readString("Please enter the state: ");
+        String state = io.readString("Please enter the state abbreviation: ");
 
+        while (state.trim().isEmpty() || state.length() != 2) {
+            io.displayMessage("Please enter a valid 2-letter state code (e.g. CA, TX).");
+            state = io.readString("Please enter the state abbreviation: ");
+        }
 
-        showProducts();
-        String productChoice = io.readString("Please select a product from the list above: ");
-        String finalProductChoice = productChoice;
-        Product selectedProduct = products.stream()
-                .filter(p -> p.getProductType().equalsIgnoreCase(finalProductChoice))
-                .findFirst()
-                .orElse(null);
-        while(selectedProduct == null) {
-            io.displayMessage("Invalid product choice.");
-            productChoice = io.readString("Please select a product from the list above: ");
-            String finalProductChoice1 = productChoice;
+        state = state.toUpperCase();
+        showProducts(products);
+
+        Product selectedProduct = null;
+
+        while (selectedProduct == null) {
+            String productChoice = io.readString("Please select a product: ");
+
             selectedProduct = products.stream()
-                    .filter(p -> p.getProductType().equalsIgnoreCase(finalProductChoice1))
+                    .filter(p -> p.getProductType().equalsIgnoreCase(productChoice))
                     .findFirst()
                     .orElse(null);
+
+            if (selectedProduct == null) {
+                io.displayMessage("Invalid product choice. Please try again.");
+            }
         }
 
-        BigDecimal area = io.readBigDecimal("Please enter the area (in square feet): ");
-        while(area.compareTo(BigDecimal.valueOf(100)) <= 0) {
-            io.displayMessage("Area must be greater than 100 sq ft.");
-            area = io.readBigDecimal("Please enter the area (in square feet): ");
+        BigDecimal area = io.readBigDecimal("Please enter the area (in sq ft): ");
+        while (area.compareTo(BigDecimal.valueOf(100)) < 0) {
+            io.displayMessage("Area must be at least 100 sq ft.");
+            area = io.readBigDecimal("Please enter the area (in sq ft): ");
         }
 
+        // ✔ VIEW ONLY builds the object (NO CALCULATIONS)
         Order order = new Order();
+        order.setOrderDate(date);
         order.setCustomerName(customerName);
         order.setState(state);
-        order.setProductType(productChoice);
+        order.setProductType(selectedProduct.getProductType());
         order.setArea(area);
-
-        order.calculateCosts(selectedProduct.getCostPerSquareFoot(), selectedProduct.getLaborCostPerSquareFoot());
 
         return order;
     }
@@ -86,29 +88,18 @@ public class FlooringMasteryView {
         String regex = "^[a-zA-Z0-9.,\\s]+$";
         return name.matches(regex);
     }
-//    private boolean dateValidation(String date) {
-//        // Regex for MM/DD/YYYY format
-//        // Validates month (01-12), day (01-31), and 4-digit year
-//        String regex = "^(0[1-9]|1[0-2])/(0[1-9]|[12][0-9]|3[01])/\\d{4}$";
-//        LocalDate today = LocalDate.now();
-//        String[] dateParts = date.split("/");
-//        int month = Integer.parseInt(dateParts[0]);
-//        int day = Integer.parseInt(dateParts[1]);
-//        int year = Integer.parseInt(dateParts[2]);
-//        LocalDate inputDate = LocalDate.of(year, month, day);
-//        if(inputDate.isBefore(today)) {
-//            return false;
-//        }
-//        return date.matches(regex);
-//        }
 
-        public void showProducts() {
-            io.displayMessage("Available Products:");
+    public void showProducts(List<Product> products) {
 
-            for(Product product : products) {
-                io.displayMessage("- " + product.getProductType() + " (Price: £" + product.getCostPerSquareFoot() + "/sq ft, Labor: $" + product.getLaborCostPerSquareFoot() + "/sq ft)");
-            }
+        displayMessage("Available Products:");
+
+        for (Product product : products) {
+            displayMessage("- " + product.getProductType()
+                    + " (Price: £" + product.getCostPerSquareFoot()
+                    + "/sq ft, Labor: $" + product.getLaborCostPerSquareFoot()
+                    + "/sq ft)");
         }
+    }
 
 
     public Order editOrderMenu(Order order) {
@@ -139,15 +130,24 @@ public class FlooringMasteryView {
     }
 
     public void displayOrders(List<Order> orders) {
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("M/d/yyyy");
+
         for (Order order : orders) {
-            String orderInfo = String.format("Order #%d: %s, %s, %s, %.2f sq ft",
+
+            String orderInfo = String.format(
+                    "Order #%d: %s, %s, %s, %.2f sq ft (%s)",
                     order.getOrderNumber(),
                     order.getCustomerName(),
                     order.getState(),
                     order.getProductType(),
-                    order.getArea());
+                    order.getArea(),
+                    order.getOrderDate().format(formatter)
+            );
+
             io.displayMessage(orderInfo);
         }
+
         io.readString("Please hit enter to continue.");
     }
 

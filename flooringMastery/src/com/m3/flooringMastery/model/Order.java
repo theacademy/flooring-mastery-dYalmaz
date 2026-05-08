@@ -10,6 +10,8 @@ public class Order {
     String state;
     BigDecimal taxRate;
     BigDecimal area;
+    BigDecimal costPerSquareFoot;
+    BigDecimal laborCostPerSquareFoot;
     BigDecimal materialCost;
     BigDecimal laborCost;
     BigDecimal tax;
@@ -111,4 +113,19 @@ public class Order {
         this.total = materialCost.add(laborCost).add(tax);
     }
 
+    public void setCostPerSquareFoot(BigDecimal costPerSquareFoot) {
+        this.costPerSquareFoot = costPerSquareFoot;
+    }
+
+    public BigDecimal getCostPerSquareFoot() {
+        return costPerSquareFoot;
+    }
+
+    public void setLaborCostPerSquareFoot(BigDecimal laborCostPerSquareFoot) {
+        this.laborCostPerSquareFoot = laborCostPerSquareFoot;
+    }
+
+    public BigDecimal getLaborCostPerSquareFoot() {
+        return laborCostPerSquareFoot;
+    }
 }

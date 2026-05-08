@@ -1,7 +1,6 @@
 package com.m3.flooringMastery.controller;
 
-import com.m3.flooringMastery.dao.OrderDAO;
-import com.m3.flooringMastery.dao.OrderDAOImpl;
+import com.m3.flooringMastery.dao.*;
 import com.m3.flooringMastery.service.OrderServiceLayer;
 import com.m3.flooringMastery.view.FlooringMasteryView;
 import com.m3.flooringMastery.view.UserIO;
@@ -13,7 +12,9 @@ public class App {
         UserIO io = new UserIOImpl();
         FlooringMasteryView view = new FlooringMasteryView(io);
         OrderDAO orderDAO = new OrderDAOImpl();
-        OrderServiceLayer service = new OrderServiceLayerImpl(orderDAO);
+        ProductDAO productDAO = new ProductDAOImpl();
+        TaxDAO taxDAO = new TaxDAOImpl();
+        OrderServiceLayer service = new OrderServiceLayerImpl(orderDAO, productDAO, taxDAO);
         FlooringController controller = new FlooringController(service, view);
         controller.run();
     }

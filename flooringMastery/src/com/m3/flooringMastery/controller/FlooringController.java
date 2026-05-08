@@ -1,12 +1,14 @@
 package com.m3.flooringMastery.controller;
 
 import com.m3.flooringMastery.dao.OrderPersistenceException;
+import com.m3.flooringMastery.dao.ProductPersistenceException;
+import com.m3.flooringMastery.dao.TaxPersistenceException;
 import com.m3.flooringMastery.model.Order;
 import com.m3.flooringMastery.service.OrderServiceLayer;
-import com.m3.flooringMastery.service.OrderServiceLayerImpl;
 import com.m3.flooringMastery.view.FlooringMasteryView;
 
 import java.io.FileNotFoundException;
+import java.math.BigDecimal;
 import java.util.List;
 
 public class FlooringController {
@@ -49,7 +51,7 @@ public class FlooringController {
                             view.displayUnknownCommandBanner();
                     }
                 }
-            } catch (OrderPersistenceException | FileNotFoundException e) {
+            } catch (OrderPersistenceException | FileNotFoundException | ProductPersistenceException e) {
                 view.displayError(e.getMessage());
             }
 
@@ -70,25 +72,39 @@ public class FlooringController {
             }
         }
 
-        public void addOrder() throws OrderPersistenceException {
-            view.displayAddOrderBanner();
-            boolean hasErrors= false;
-            do {
-                Order order = view.getOrderFromUser();
-                try {
-                    orderService.createOrder(order);
-                    view.displayAddSuccessBanner();
-                    hasErrors = false;
-                } catch (OrderPersistenceException | FileNotFoundException e) {
-                    hasErrors = true;
-                    view.displayError(e.getMessage());
-                }
-            } while (hasErrors);
+    public void addOrder() throws ProductPersistenceException {
 
-        }
+        view.displayAddOrderBanner();
+
+        boolean hasErrors;
+
+        do {
+            hasErrors = false;
+
+            Order order = view.getOrderFromUser(orderService.getAllProducts());
+
+            try {
+                orderService.createOrder(order);
+
+                view.displayAddSuccessBanner();
+
+            } catch (TaxPersistenceException e) {
+                hasErrors = true;
+                view.displayError("State error: " + e.getMessage());
+
+            } catch (ProductPersistenceException e) {
+                hasErrors = true;
+                view.displayError("Product error: " + e.getMessage());
+
+            } catch (OrderPersistenceException | FileNotFoundException e) {
+                hasErrors = true;
+                view.displayError("Save error: " + e.getMessage());
+            }
+
+        } while (hasErrors);
+    }
 
         public void editOrder() throws OrderPersistenceException {
-
 
         }
 

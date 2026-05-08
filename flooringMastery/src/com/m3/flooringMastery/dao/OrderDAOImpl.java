@@ -10,107 +10,128 @@ import java.util.*;
 
 public class OrderDAOImpl implements OrderDAO {
 
-    public static final String ordersDir = "flooringMastery/Data/Orders/";
+    public static final String ORDER_DIR = "flooringMastery/Orders/";
     Map<LocalDate, List<Order>> orders = new HashMap<>();
     public static final String DELIMETER = ",";
 
 
     @Override
-    public List<Order> getOrders(LocalDate date)
-            throws OrderPersistenceException, FileNotFoundException {
+    public List<Order> getOrders(LocalDate date) throws OrderPersistenceException {
 
         loadOrders();
 
-        List<Order> ordersByDate = orders.get(date);
+        return new ArrayList<>(
+                orders.getOrDefault(date, new ArrayList<>())
+        );
+    }
 
-        if (ordersByDate == null || ordersByDate.isEmpty()) {
-            throw new OrderPersistenceException(
-                    "No orders found for date: " + date);
+    private Order unmarshallOrder(String line) {
+
+        String[] tokens = line.split(",");
+
+        if (tokens.length < 12) {
+            throw new IllegalArgumentException(
+                    "Corrupt order line: " + line
+            );
         }
 
-        return ordersByDate;
+        Order order = new Order();
+
+        order.setOrderNumber(Integer.parseInt(tokens[0]));
+        order.setCustomerName(tokens[1]);
+        order.setState(tokens[2]);
+        order.setTaxRate(new BigDecimal(tokens[3]));
+        order.setProductType(tokens[4]);
+        order.setArea(new BigDecimal(tokens[5]));
+        order.setCostPerSquareFoot(new BigDecimal(tokens[6]));
+        order.setLaborCostPerSquareFoot(new BigDecimal(tokens[7]));
+        order.setMaterialCost(new BigDecimal(tokens[8]));
+        order.setLaborCost(new BigDecimal(tokens[9]));
+        order.setTax(new BigDecimal(tokens[10]));
+        order.setTotal(new BigDecimal(tokens[11]));
+
+        return order;
     }
 
-    private Order unmarshallOrder(String orderAsText) {
-        String[] orderTokens = orderAsText.split(DELIMETER);
+    private String marshallOrder(Order order) {
 
-        int orderNumber = Integer.parseInt(orderTokens[0]);
-        String customerName = orderTokens[1];
-        String state = orderTokens[2];
-        BigDecimal taxRate = new BigDecimal(orderTokens[3]);
-        String productType = orderTokens[4];
-        BigDecimal area = new BigDecimal(orderTokens[5]);
-        BigDecimal materialCost = new BigDecimal(orderTokens[6]);
-        BigDecimal laborCost = new BigDecimal(orderTokens[7]);
-        BigDecimal tax = new BigDecimal(orderTokens[8]);
-        BigDecimal total = new BigDecimal(orderTokens[9]);
-        Order orderFromFile = new Order();
-        orderFromFile.setOrderNumber(orderNumber);
-        orderFromFile.setCustomerName(customerName);
-        orderFromFile.setState(state);
-        orderFromFile.setProductType(productType);
-        orderFromFile.setArea(area);
-        orderFromFile.setTaxRate(taxRate);
-        orderFromFile.setMaterialCost(materialCost);
-        orderFromFile.setLaborCost(laborCost);
-        orderFromFile.setTax(tax);
-        orderFromFile.setTotal(total);
-
-        return orderFromFile;
-    }
-
-    private String marshallOrder(Order order){
-        String orderAsText = order.getCustomerName() + DELIMETER;
-        orderAsText += order.getState() + DELIMETER;
-        orderAsText += order.getProductType() + DELIMETER;
-        orderAsText += order.getArea() + DELIMETER;
-        orderAsText += order.getTaxRate() + DELIMETER;
-        orderAsText += order.getMaterialCost() + DELIMETER;
-        orderAsText += order.getLaborCost() + DELIMETER;
-        orderAsText += order.getTax() + DELIMETER;
-        orderAsText += order.getTotal();
-        return orderAsText;
+        return order.getOrderNumber() + DELIMETER +
+                order.getCustomerName() + DELIMETER +
+                order.getState() + DELIMETER +
+                order.getTaxRate() + DELIMETER +
+                order.getProductType() + DELIMETER +
+                order.getArea() + DELIMETER +
+                order.getCostPerSquareFoot() + DELIMETER +
+                order.getLaborCostPerSquareFoot() + DELIMETER +
+                order.getMaterialCost() + DELIMETER +
+                order.getLaborCost() + DELIMETER +
+                order.getTax() + DELIMETER +
+                order.getTotal();
     }
 
 
 
     @Override
-    public void addOrder(Order order) throws OrderPersistenceException {
+    public Order addOrder(Order order) throws OrderPersistenceException {
 
-        orders.computeIfAbsent(
-                        order.getOrderDate(),
-                        k -> new ArrayList<>())
-                .add(order);
+        LocalDate date = order.getOrderDate();
+
+        // Load only that date's file
+        List<Order> ordersForDate = loadOrdersForDate(date);
+
+        // assign order number safely
+        int maxId = ordersForDate.stream()
+                .mapToInt(Order::getOrderNumber)
+                .max()
+                .orElse(0);
+
+        order.setOrderNumber(maxId + 1);
+
+        ordersForDate.add(order);
+
+        orders.put(date, ordersForDate);
+
+        writeOrdersForDate(date, ordersForDate);
+
+        return order;
     }
 
     @Override
     public void editOrder(Order order) throws OrderPersistenceException, FileNotFoundException {
 
-        List<Order> ordersByDate = getOrders(order.getOrderDate());
+        loadOrders();
 
-        for (int i = 0; i < ordersByDate.size(); i++) {
+        List<Order> list = orders.get(order.getOrderDate());
 
-            if (ordersByDate.get(i).getOrderNumber()
-                    == order.getOrderNumber()) {
+        if (list == null) return;
 
-                ordersByDate.set(i, order);
-                return;
+        for (int i = 0; i < list.size(); i++) {
+            if (list.get(i).getOrderNumber() == order.getOrderNumber()) {
+                list.set(i, order);
+                break;
             }
         }
 
-        throw new OrderPersistenceException(
-                "Order not found.");
+        writeOrders();
     }
 
     @Override
-    public Order removeOrder(LocalDate date, int orderNumber) throws OrderPersistenceException, FileNotFoundException {
-        List<Order> ordersByDate = getOrders(date);
-        for(int i=0; i<ordersByDate.size(); i++){
-            if(ordersByDate.get(i).getOrderNumber()==orderNumber){
-                return ordersByDate.remove(i);
-            }
+    public void removeOrder(LocalDate date, int orderNumber)
+            throws OrderPersistenceException, FileNotFoundException {
+
+        loadOrders();
+
+        List<Order> list = orders.get(date);
+
+        if (list == null) return;
+
+        list.removeIf(o -> o.getOrderNumber() == orderNumber);
+
+        if (list.isEmpty()) {
+            orders.remove(date);
         }
-        return null;
+
+        writeOrders();
     }
 
     @Override
@@ -118,75 +139,154 @@ public class OrderDAOImpl implements OrderDAO {
 
     }
 
-    private void loadOrders() throws OrderPersistenceException, FileNotFoundException {
+    private void loadOrders() throws OrderPersistenceException {
 
         orders.clear();
-        File directory = new File(ordersDir);
 
-        // Check if directory exists
+        File directory = new File(ORDER_DIR);
+
         if (!directory.exists() || !directory.isDirectory()) {
             throw new OrderPersistenceException("Orders directory not found.");
         }
 
-        // Get all txt files
-        File[] orderFiles = directory.listFiles((dir, name) ->
-                name.endsWith(".txt"));
+        File[] files = directory.listFiles((dir, name) -> name.endsWith(".txt"));
 
-        if (orderFiles == null) {
-            throw new OrderPersistenceException("No order files found.");
-        }
+        if (files == null) return;
 
-        // Read each file
-        for (File file : orderFiles) {
+        for (File file : files) {
 
             String fileName = file.getName();
 
-            // Orders_06012013.txt
-            String datePortion =
-                    fileName.replace("Orders_", "")
-                            .replace(".txt", "");
+            String datePart = fileName
+                    .replace("Orders_", "")
+                    .replace(".txt", "");
 
-            LocalDate orderDate = LocalDate.parse(
-                    datePortion,
+            LocalDate orderDate = LocalDate.parse(datePart,
                     DateTimeFormatter.ofPattern("MMddyyyy"));
 
-            try (Scanner scanner = new Scanner(
-                    new BufferedReader(new FileReader(file)))) {
+            try (Scanner scanner = new Scanner(new BufferedReader(new FileReader(file)))) {
 
-                // skip header
                 if (scanner.hasNextLine()) {
-                    scanner.nextLine();
+                    scanner.nextLine(); // skip header
                 }
 
                 while (scanner.hasNextLine()) {
 
-                    String currentLine = scanner.nextLine();
+                    String line = scanner.nextLine();
+                    Order order = unmarshallOrder(line);
 
-                    Order currentOrder = unmarshallOrder(currentLine);
+                    order.setOrderDate(orderDate);
 
-                    currentOrder.setOrderDate(orderDate);
-
-                    orders.computeIfAbsent(orderDate,
-                                    k -> new ArrayList<>())
-                            .add(currentOrder);
+                    orders.computeIfAbsent(orderDate, k -> new ArrayList<>())
+                            .add(order);
                 }
+
+            } catch (FileNotFoundException e) {
+                throw new OrderPersistenceException("Could not load file: " + file.getName(), e);
             }
         }
     }
 
-     private void writeOrders() throws OrderPersistenceException, FileNotFoundException {
-         PrintWriter out;
-            try {
-                out = new PrintWriter(ordersDir);
-            } catch (java.io.FileNotFoundException e) {
-                throw new OrderPersistenceException("Could not save order data.", e);
+    private List<Order> loadOrdersForDate(LocalDate date) throws OrderPersistenceException {
+
+        List<Order> list = new ArrayList<>();
+
+        String fileName = ORDER_DIR + "Orders_" +
+                date.format(DateTimeFormatter.ofPattern("MMddyyyy")) +
+                ".txt";
+
+        File file = new File(fileName);
+
+        if (!file.exists()) {
+            return list; // no file yet → empty list
+        }
+
+        try (Scanner scanner = new Scanner(new BufferedReader(new FileReader(file)))) {
+
+            if (scanner.hasNextLine()) {
+                scanner.nextLine(); // skip header
             }
-            List<Order> ordersByDate = getOrders(LocalDate.now());
-            for (Order currentOrder : ordersByDate) {
-                String orderAsText = marshallOrder(currentOrder);
-                out.println(orderAsText);
-                out.flush();
+
+            while (scanner.hasNextLine()) {
+                try {
+                    Order order = unmarshallOrder(scanner.nextLine());
+                    order.setOrderDate(date);
+                    list.add(order);
+                } catch (Exception e) {
+                    System.out.println("Skipping bad line in file " + fileName);
+                }
             }
-     }
+
+        } catch (FileNotFoundException e) {
+            throw new OrderPersistenceException("Could not load file: " + fileName, e);
+        }
+
+        return list;
+    }
+
+    public void writeOrders() throws OrderPersistenceException {
+
+        File directory = new File(ORDER_DIR);
+
+        if (!directory.exists()) {
+            directory.mkdirs();
+        }
+
+        for (Map.Entry<LocalDate, List<Order>> entry : orders.entrySet()) {
+
+            LocalDate date = entry.getKey();
+
+            String fileName = "Orders_" +
+                    date.format(DateTimeFormatter.ofPattern("MMddyyyy")) +
+                    ".txt";
+
+            File file = new File(directory, fileName);
+
+            try (PrintWriter out = new PrintWriter(new FileWriter(file))) {
+
+                out.println("OrderNumber,CustomerName,State,TaxRate,ProductType,Area,CostPerSquareFoot,LaborCostPerSquareFoot,MaterialCost,LaborCost,Tax,Total");
+
+                for (Order order : entry.getValue()) {
+
+                    out.println(marshallOrder(order));
+                }
+
+            } catch (IOException e) {
+                throw new OrderPersistenceException(
+                        "Could not save order data: " + e.getMessage(), e
+                );
+            }
+        }
+    }
+
+    private void writeOrdersForDate(LocalDate date, List<Order> orders)
+            throws OrderPersistenceException {
+
+        File directory = new File(ORDER_DIR);
+
+        if (!directory.exists()) {
+            directory.mkdirs();
+        }
+
+        String fileName = "Orders_" +
+                date.format(DateTimeFormatter.ofPattern("MMddyyyy")) +
+                ".txt";
+
+        File file = new File(directory, fileName);
+
+        try (PrintWriter out = new PrintWriter(new FileWriter(file))) {
+
+            out.println("OrderNumber,CustomerName,State,TaxRate,ProductType,Area,"
+                    + "CostPerSquareFoot,LaborCostPerSquareFoot,MaterialCost,"
+                    + "LaborCost,Tax,Total");
+
+            for (Order order : orders) {
+                out.println(marshallOrder(order));
+            }
+
+        } catch (IOException e) {
+            throw new OrderPersistenceException("Could not write file: " + fileName, e);
+        }
+    }
 
 }

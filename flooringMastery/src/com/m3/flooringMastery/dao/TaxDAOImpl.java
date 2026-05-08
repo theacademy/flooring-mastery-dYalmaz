@@ -8,60 +8,73 @@ import java.util.*;
 
 public class TaxDAOImpl implements TaxDAO {
 
-     public static final String TAX_FILE = "Data/Taxes.txt";
+     public static final String TAX_FILE = "flooringMastery/Data/Taxes.txt";
      public static final String DELIMITER = ",";
-     Map<Tax, BigDecimal> taxes = new HashMap<>();
+    Map<String, Tax> taxes = new HashMap<>();
      Tax tax;
 
 
     @Override
-    public BigDecimal getTaxRate(String stateAbbreviation) throws TaxPersistenceException {
+    public BigDecimal getTaxRate(String stateAbbreviation)
+            throws TaxPersistenceException {
+
         loadTaxes();
-        for (Tax tax : taxes.keySet()) {
-            if (tax.getStateAbbreviation().equalsIgnoreCase(stateAbbreviation)) {
-                return tax.getTaxRate();
-            }
+
+        Tax tax = taxes.get(stateAbbreviation.toUpperCase());
+
+        if (tax != null) {
+            return tax.getTaxRate();
         }
+
         return null;
     }
 
     @Override
-    public boolean stateExists(String stateAbbreviation) throws TaxPersistenceException {
+    public boolean stateExists(String stateAbbreviation)
+            throws TaxPersistenceException {
+
         loadTaxes();
-        for (Tax tax : taxes.keySet()) {
-            if (tax.getStateAbbreviation().equalsIgnoreCase(stateAbbreviation)) {
-                return true;
-            }
-        }
-        return false;
+
+        return taxes.containsKey(stateAbbreviation.toUpperCase());
     }
 
     @Override
     public List<Tax> getAllTaxes() throws TaxPersistenceException {
         loadTaxes();
-        return new ArrayList<>(taxes.keySet());
+        return new ArrayList<>(taxes.values());
     }
 
     private void loadTaxes() throws TaxPersistenceException {
+
+        taxes.clear();
+
         Scanner scanner;
 
         try {
-            scanner = new Scanner(new java.io.BufferedReader(new java.io.FileReader(TAX_FILE)));
+            scanner = new Scanner(
+                    new java.io.BufferedReader(
+                            new java.io.FileReader(TAX_FILE)));
         } catch (java.io.FileNotFoundException e) {
             throw new TaxPersistenceException("Could not load tax data.", e);
         }
-            String currentLine;
-            String[] currentTokens;
 
-            while (scanner.hasNextLine()) {
-                currentLine = scanner.nextLine();
-                currentTokens = currentLine.split(DELIMITER);
+        if (scanner.hasNextLine()) {
+            scanner.nextLine(); // skip header (IMPORTANT if present)
+        }
 
-                tax = new Tax(currentTokens[0]);
-                tax.setStateName(currentTokens[1]);
-                tax.setTaxRate(new BigDecimal(currentTokens[2]));
-                taxes.put(tax,tax.getTaxRate());
-            }
-            scanner.close();
+        while (scanner.hasNextLine()) {
+
+            String currentLine = scanner.nextLine();
+            String[] currentTokens = currentLine.split(DELIMITER);
+
+            Tax tax = new Tax(currentTokens[0]);
+            tax.setStateName(currentTokens[1]);
+            tax.setTaxRate(new BigDecimal(currentTokens[2]));
+
+            taxes.put(tax.getStateAbbreviation().toUpperCase(), tax);
+        }
+
+        scanner.close();
     }
+
 }

@@ -8,9 +8,9 @@ import java.util.List;
 
 public interface OrderDAO {
     List<Order> getOrders(LocalDate date) throws OrderPersistenceException, FileNotFoundException;
-    void addOrder(Order order) throws OrderPersistenceException;
+    Order addOrder(Order order) throws OrderPersistenceException, FileNotFoundException;
     void editOrder(Order order) throws OrderPersistenceException, FileNotFoundException;
-    Order removeOrder(LocalDate date, int orderNumber) throws OrderPersistenceException, FileNotFoundException;
+    void removeOrder(LocalDate date, int orderNumber) throws OrderPersistenceException, FileNotFoundException;
     void exportData() throws OrderPersistenceException;
 
 }
