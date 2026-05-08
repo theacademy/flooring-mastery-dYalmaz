@@ -33,10 +33,10 @@ public class FlooringMasteryView {
 
     public Order getOrderFromUser() {
         LocalDate date = io.readDate("Please enter the order date (MM/DD/YYYY): ");
-        while(!dateValidation(date.toString())){
-            io.displayMessage("Invalid date.");
-            date = io.readDate("Please enter the order date (MM/DD/YYYY): ");
-        }
+//        while(!dateValidation(date.toString())){
+//            io.displayMessage("Invalid date.");
+//            date = io.readDate("Please enter the order date (MM/DD/YYYY): ");
+//        }
 
         String customerName = io.readString("Please enter the customer's name: ");
         while(!nameValidation(customerName)){
@@ -86,21 +86,21 @@ public class FlooringMasteryView {
         String regex = "^[a-zA-Z0-9.,\\s]+$";
         return name.matches(regex);
     }
-    private boolean dateValidation(String date) {
-        // Regex for MM/DD/YYYY format
-        // Validates month (01-12), day (01-31), and 4-digit year
-        String regex = "^(0[1-9]|1[0-2])/(0[1-9]|[12][0-9]|3[01])/\\d{4}$";
-        LocalDate today = LocalDate.now();
-        String[] dateParts = date.split("/");
-        int month = Integer.parseInt(dateParts[0]);
-        int day = Integer.parseInt(dateParts[1]);
-        int year = Integer.parseInt(dateParts[2]);
-        LocalDate inputDate = LocalDate.of(year, month, day);
-        if(inputDate.isBefore(today)) {
-            return false;
-        }
-        return date.matches(regex);
-        }
+//    private boolean dateValidation(String date) {
+//        // Regex for MM/DD/YYYY format
+//        // Validates month (01-12), day (01-31), and 4-digit year
+//        String regex = "^(0[1-9]|1[0-2])/(0[1-9]|[12][0-9]|3[01])/\\d{4}$";
+//        LocalDate today = LocalDate.now();
+//        String[] dateParts = date.split("/");
+//        int month = Integer.parseInt(dateParts[0]);
+//        int day = Integer.parseInt(dateParts[1]);
+//        int year = Integer.parseInt(dateParts[2]);
+//        LocalDate inputDate = LocalDate.of(year, month, day);
+//        if(inputDate.isBefore(today)) {
+//            return false;
+//        }
+//        return date.matches(regex);
+//        }
 
         public void showProducts() {
             io.displayMessage("Available Products:");
@@ -229,5 +229,9 @@ public class FlooringMasteryView {
 
     public void displayAddSuccessBanner() {
         io.displayMessage("Order successfully added. Please hit enter to continue.");
+    }
+
+    public void displayMessage(String s) {
+        io.displayMessage(s);
     }
 }

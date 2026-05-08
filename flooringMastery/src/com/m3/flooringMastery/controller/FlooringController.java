@@ -6,6 +6,7 @@ import com.m3.flooringMastery.service.OrderServiceLayer;
 import com.m3.flooringMastery.service.OrderServiceLayerImpl;
 import com.m3.flooringMastery.view.FlooringMasteryView;
 
+import java.io.FileNotFoundException;
 import java.util.List;
 
 public class FlooringController {
@@ -48,15 +49,25 @@ public class FlooringController {
                             view.displayUnknownCommandBanner();
                     }
                 }
-            } catch (OrderPersistenceException e) {
+            } catch (OrderPersistenceException | FileNotFoundException e) {
                 view.displayError(e.getMessage());
             }
 
         }
 
-        public void displayOrders() throws OrderPersistenceException {
-            List<Order> orders = orderService.getOrdersByDate(view.getDateFromUser());
-            view.displayOrders(orders);
+        public void displayOrders() throws OrderPersistenceException, FileNotFoundException {
+            try {
+                List<Order> orders = orderService.getOrdersByDate(view.getDateFromUser());
+
+                if (orders.isEmpty()) {
+                    view.displayMessage("No orders found for this date.");
+                } else {
+                    view.displayOrders(orders);
+                }
+
+            } catch (OrderPersistenceException e) {
+                view.displayMessage(e.getMessage());
+            }
         }
 
         public void addOrder() throws OrderPersistenceException {
@@ -68,7 +79,7 @@ public class FlooringController {
                     orderService.createOrder(order);
                     view.displayAddSuccessBanner();
                     hasErrors = false;
-                } catch (OrderPersistenceException e) {
+                } catch (OrderPersistenceException | FileNotFoundException e) {
                     hasErrors = true;
                     view.displayError(e.getMessage());
                 }

@@ -4,6 +4,7 @@ import com.m3.flooringMastery.dao.OrderDAO;
 import com.m3.flooringMastery.dao.OrderPersistenceException;
 import com.m3.flooringMastery.model.Order;
 
+import java.io.FileNotFoundException;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -15,7 +16,7 @@ public class OrderServiceLayerImpl implements OrderServiceLayer {
     }
 
     @Override
-    public void createOrder(Order order) throws OrderPersistenceException, DuplicateIdException, OrderDataValidationException {
+    public void createOrder(Order order) throws OrderPersistenceException, DuplicateIdException, OrderDataValidationException, FileNotFoundException {
         if(dao.getOrders(order.getOrderDate()).contains(order)){
             throw new DuplicateIdException("ERROR: Order ID already exists.");
         }
@@ -27,18 +28,18 @@ public class OrderServiceLayerImpl implements OrderServiceLayer {
     }
 
     @Override
-    public void editOrder(Order order) throws OrderPersistenceException {
+    public void editOrder(Order order) throws OrderPersistenceException, FileNotFoundException {
             dao.editOrder(order);
     }
 
     @Override
-    public List<Order> getOrdersByDate(LocalDate date) throws OrderPersistenceException {
+    public List<Order> getOrdersByDate(LocalDate date) throws OrderPersistenceException, FileNotFoundException {
 
         return dao.getOrders(date);
     }
 
     @Override
-    public Order removeOrder(int orderId, LocalDate date) throws OrderPersistenceException {
+    public Order removeOrder(int orderId, LocalDate date) throws OrderPersistenceException, FileNotFoundException {
         return dao.removeOrder(date, orderId);
 
     }

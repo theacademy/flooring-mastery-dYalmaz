@@ -1,66 +1,97 @@
 package com.m3.flooringMastery.view;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.Scanner;
 import java.math.BigDecimal;
 
 public class UserIOImpl implements UserIO{
 
-        @Override
-        public void displayMessage(String message) {
-            System.out.println(message);
-        }
+private static final DateTimeFormatter DATE_FORMATTER =
+        DateTimeFormatter.ofPattern("M/d/yyyy");
 
-        @Override
-        public String readString(String prompt) {
-            System.out.println(prompt);
-            Scanner sc = new Scanner(System.in);
-            return sc.nextLine();
-        }
+private final Scanner sc = new Scanner(System.in);
 
-        @Override
-        public int readInt(String prompt) {
-            System.out.println(prompt);
-            Scanner sc = new Scanner(System.in);
-            return sc.nextInt();
-        }
 
-        @Override
-        public int readInt(String prompt, int min, int max) {
-            System.out.println(prompt);
-            Scanner sc = new Scanner(System.in);
-            int userInt = sc.nextInt();
-            while(userInt<min || userInt>max){
+    @Override
+    public void displayMessage(String message) {
+        System.out.println(message);
+    }
+
+    @Override
+    public String readString(String prompt) {
+        System.out.println(prompt);
+        return sc.nextLine();
+    }
+
+    @Override
+    public int readInt(String prompt) {
+
+        while (true) {
+            try {
                 System.out.println(prompt);
-                userInt = sc.nextInt();
+                return Integer.parseInt(sc.nextLine().trim());
+
+            } catch (NumberFormatException e) {
+                System.out.println("Invalid input. Please enter a number from the menu.");
             }
-            return userInt;
         }
+    }
 
-        @Override
-        public java.math.BigDecimal readBigDecimal(String prompt) {
-            System.out.println(prompt);
-            Scanner sc = new Scanner(System.in);
-            return sc.nextBigDecimal();
-        }
+    @Override
+    public int readInt(String prompt, int min, int max) {
 
-        @Override
-        public java.math.BigDecimal readBigDecimal(String prompt, java.math.BigDecimal min) {
-            System.out.println(prompt);
-            Scanner sc = new Scanner(System.in);
-            BigDecimal userBD = sc.nextBigDecimal();
-            while(userBD.compareTo(min)<0){
+        while (true) {
+            try {
                 System.out.println(prompt);
-                userBD = sc.nextBigDecimal();
-            }
-            return userBD;
-        }
+                int value = Integer.parseInt(sc.nextLine().trim());
 
-        @Override
-        public java.time.LocalDate readDate(String prompt) {
-            System.out.println(prompt);
-            Scanner sc = new Scanner(System.in);
-            String userDate = sc.nextLine();
-            return java.time.LocalDate.parse(userDate, java.time.format.DateTimeFormatter.ofPattern("MM/dd/yyyy"));
+                if (value >= min && value <= max) {
+                    return value;
+                }
+
+            } catch (NumberFormatException e) {
+                // ignore
+            }
+
+            System.out.println("Invalid choice. Enter a number between " + min + " and " + max);
         }
+    }
+
+    @Override
+    public java.math.BigDecimal readBigDecimal(String prompt) {
+        System.out.println(prompt);
+        return new BigDecimal(sc.nextLine());
+    }
+
+    @Override
+    public java.math.BigDecimal readBigDecimal(String prompt, java.math.BigDecimal min) {
+        System.out.println(prompt);
+        BigDecimal userBD = new BigDecimal(sc.nextLine());
+        while(userBD.compareTo(min)<0){
+            System.out.println(prompt);
+            userBD = new BigDecimal(sc.nextLine());
+        }
+        return userBD;
+    }
+
+
+
+    @Override
+    public LocalDate readDate(String prompt) {
+
+        while (true) {
+            try {
+                System.out.println(prompt);
+                String userDate = sc.nextLine();
+
+                return LocalDate.parse(userDate, DATE_FORMATTER);
+
+            } catch (DateTimeParseException e) {
+                System.out.println("Invalid date. Please use M/d/yyyy (e.g. 6/1/2013)");
+            }
+        }
+    }
 
 }
