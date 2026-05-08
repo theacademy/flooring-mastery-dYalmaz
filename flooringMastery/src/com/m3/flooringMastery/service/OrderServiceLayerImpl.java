@@ -83,7 +83,8 @@ public class OrderServiceLayerImpl implements OrderServiceLayer {
             throws TaxPersistenceException, ProductPersistenceException {
 
         // tax
-        BigDecimal taxRate = taxDAO.getTaxRate(order.getState().toUpperCase());
+        order.setState(order.getState().toUpperCase());
+        BigDecimal taxRate = taxDAO.getTaxRate(order.getState());
 
         if (taxRate == null) {
             throw new TaxPersistenceException("We do not operate in state: " + order.getState());

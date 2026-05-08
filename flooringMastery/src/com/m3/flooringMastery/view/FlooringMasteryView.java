@@ -109,8 +109,6 @@ public class FlooringMasteryView {
         updated.setOrderNumber(originalOrder.getOrderNumber());
         updated.setOrderDate(originalOrder.getOrderDate());
 
-        boolean needsRecalculation = false;
-
         // ---------- CUSTOMER NAME ----------
         String customerName = io.readString(
                 "Enter new customer name (" + originalOrder.getCustomerName() + "): "
@@ -131,7 +129,6 @@ public class FlooringMasteryView {
             updated.setState(originalOrder.getState());
         } else {
             updated.setState(state.toUpperCase());
-            needsRecalculation = true;
         }
 
         // ---------- PRODUCT TYPE ----------
@@ -143,7 +140,6 @@ public class FlooringMasteryView {
             updated.setProductType(originalOrder.getProductType());
         } else {
             updated.setProductType(productType);
-            needsRecalculation = true;
         }
 
         // ---------- AREA ----------
@@ -162,7 +158,6 @@ public class FlooringMasteryView {
                     updated.setArea(originalOrder.getArea());
                 } else {
                     updated.setArea(area);
-                    needsRecalculation = true;
                 }
 
             } catch (NumberFormatException e) {
@@ -182,15 +177,12 @@ public class FlooringMasteryView {
         updated.setTax(null);
         updated.setTotal(null);
 
-        // OPTIONAL: attach flag via a transient field (if you add one later)
-         updated.setNeedsRecalculation(needsRecalculation);
 
         return updated;
     }
 
     public void removeOrder() {
         int orderNumber = io.readInt("Please enter the order number to remove: ");
-        // Implement logic to remove the order based on the order number
     }
 
     public void displayOrders(List<Order> orders) {
@@ -213,20 +205,6 @@ public class FlooringMasteryView {
         }
 
         io.readString("Please hit enter to continue.");
-    }
-
-    public void displayOrder(Order order) {
-        if(order != null) {
-            String orderInfo = String.format("Order #%d: %s, %s, %s, %.2f sq ft",
-                    order.getOrderNumber(),
-                    order.getCustomerName(),
-                    order.getState(),
-                    order.getProductType(),
-                    order.getArea());
-            io.displayMessage(orderInfo);
-        } else {
-            io.displayMessage("Order not found.");
-        }
     }
 
     public void displayOrderSummary(Order order) {
@@ -252,13 +230,6 @@ public class FlooringMasteryView {
         return response.equalsIgnoreCase("Y");
     }
 
-    public void displayProducts(List<String> products) {
-        io.displayMessage("Available Products:");
-        for (String product : products) {
-            io.displayMessage("- " + product);
-        }
-    }
-
     public void displayBanner() {
         io.displayMessage("=== Welcome to the Flooring Mastery Program ===");
     }
@@ -274,13 +245,6 @@ public class FlooringMasteryView {
         io.displayMessage("Data exported successfully. Please hit enter to continue.");
         io.readString("");
     }
-
-    public String getUserInput(String prompt) {
-        return io.readString(prompt);
-    }
-
-
-
 
     public void displayUnknownCommandBanner() {
         io.displayMessage("Unknown Command");

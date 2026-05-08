@@ -24,6 +24,7 @@ public class FlooringController {
         public void run() {
             boolean keepGoing = true;
             int menuSelection = 0;
+            view.displayBanner();
 
             try {
                 while (keepGoing) {
@@ -125,7 +126,7 @@ public class FlooringController {
             // 4. Get order number
             int orderNumber = view.getUserOrderNumber();
 
-            // 5. Find order
+            // 5. Find original order
             Order original = orders.stream()
                     .filter(o -> o.getOrderNumber() == orderNumber)
                     .findFirst()
@@ -136,13 +137,23 @@ public class FlooringController {
                 return;
             }
 
-            // 6. Get updated order from view
+            // 6. Get edited version (still raw, NOT recalculated)
             Order updated = view.editOrderMenu(original);
 
-            // 7. IMPORTANT: service should handle EVERYTHING (validation + recalculation)
+            // 7. Recalculate + validate via SERVICE (IMPORTANT)
             orderService.editOrder(updated);
 
-            // 8. Success message
+            // 8. Now reload updated order (ensures display shows correct values)
+            List<Order> refreshed = orderService.getOrdersByDate(date);
+
+            Order saved = refreshed.stream()
+                    .filter(o -> o.getOrderNumber() == orderNumber)
+                    .findFirst()
+                    .orElse(updated);
+
+            // 9. Display FINAL summary (now fully calculated)
+            view.displayOrderSummary(saved);
+
             view.displayMessage("Order updated successfully.");
 
         } catch (Exception e) {
