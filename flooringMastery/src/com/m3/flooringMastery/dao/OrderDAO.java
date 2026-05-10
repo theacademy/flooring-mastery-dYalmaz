@@ -1,5 +1,10 @@
 package com.m3.flooringMastery.dao;
 
+/**
+ * OrderDAO - Interface defining contract for order data persistence operations.
+ * Specifies methods for retrieving, adding, editing, and removing orders, and exporting order data.
+ */
+
 import com.m3.flooringMastery.model.Order;
 
 import java.io.FileNotFoundException;

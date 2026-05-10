@@ -1,5 +1,10 @@
 package com.m3.flooringMastery.dao;
 
+/**
+ * TaxDAO - Interface defining contract for tax data access operations.
+ * Specifies methods for retrieving tax rates by state and validating state availability.
+ */
+
 import com.m3.flooringMastery.model.Tax;
 
 import java.math.BigDecimal;

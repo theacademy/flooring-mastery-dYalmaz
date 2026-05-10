@@ -1,5 +1,11 @@
 package com.m3.flooringMastery.controller;
 
+/**
+ * FlooringController - Main application controller that orchestrates the flooring mastery program.
+ * This class manages the flow of the application by handling menu selections and delegating operations
+ * to the service layer. It coordinates displaying orders, adding, editing, removing orders, and exporting data.
+ */
+
 import com.m3.flooringMastery.dao.OrderPersistenceException;
 import com.m3.flooringMastery.dao.ProductPersistenceException;
 import com.m3.flooringMastery.dao.TaxPersistenceException;

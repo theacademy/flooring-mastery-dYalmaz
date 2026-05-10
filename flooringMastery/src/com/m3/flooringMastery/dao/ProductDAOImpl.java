@@ -1,5 +1,11 @@
 package com.m3.flooringMastery.dao;
 
+/**
+ * ProductDAOImpl - Data Access Object for managing product data.
+ * This class handles loading and retrieving product information from a data file.
+ * It provides access to product types and their associated costs (material and labor) per square foot.
+ */
+
 import com.m3.flooringMastery.model.Product;
 
 import java.io.BufferedReader;

@@ -1,5 +1,12 @@
 package com.m3.flooringMastery.service;
 
+/**
+ * OrderServiceLayerImpl - Service layer implementation for order operations.
+ * This class contains business logic for creating, editing, removing, and retrieving orders.
+ * It handles validation, cost calculations, tax rate lookups, and product verification.
+ * It acts as an intermediary between the controller and the data access layer.
+ */
+
 import com.m3.flooringMastery.dao.*;
 import com.m3.flooringMastery.model.Order;
 import com.m3.flooringMastery.model.Product;

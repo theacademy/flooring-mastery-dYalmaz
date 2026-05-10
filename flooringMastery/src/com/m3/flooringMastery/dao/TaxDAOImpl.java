@@ -1,5 +1,11 @@
 package com.m3.flooringMastery.dao;
 
+/**
+ * TaxDAOImpl - Data Access Object for managing tax information by state.
+ * This class handles loading and retrieving tax rates for different states.
+ * It provides validation of state abbreviations and access to all available tax data.
+ */
+
 import com.m3.flooringMastery.model.Product;
 import com.m3.flooringMastery.model.Tax;
 

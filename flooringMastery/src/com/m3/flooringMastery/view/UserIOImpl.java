@@ -1,5 +1,11 @@
 package com.m3.flooringMastery.view;
 
+/**
+ * UserIOImpl - Handles all user input and output operations.
+ * This class provides methods for reading and validating user input (strings, integers, BigDecimals, dates)
+ * and displaying messages to the console. It serves as the interface between the user and the application.
+ */
+
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;

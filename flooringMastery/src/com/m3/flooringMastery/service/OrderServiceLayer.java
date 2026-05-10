@@ -1,5 +1,11 @@
 package com.m3.flooringMastery.service;
 
+/**
+ * OrderServiceLayer - Interface defining contract for order business logic operations.
+ * Specifies methods for creating, editing, removing, and retrieving orders, as well as
+ * accessing product and tax information needed for order processing.
+ */
+
 import com.m3.flooringMastery.dao.OrderPersistenceException;
 import com.m3.flooringMastery.dao.ProductPersistenceException;
 import com.m3.flooringMastery.dao.TaxPersistenceException;
@@ -12,11 +18,11 @@ import java.time.LocalDate;
 import java.util.List;
 
 public interface OrderServiceLayer {
-        public void createOrder(Order order) throws OrderPersistenceException, DuplicateIdException, OrderDataValidationException, FileNotFoundException, TaxPersistenceException, ProductPersistenceException;
-        public void editOrder(Order order) throws OrderPersistenceException, FileNotFoundException;
-        public List<Order> getOrdersByDate(LocalDate date) throws OrderPersistenceException, FileNotFoundException;
-        public void removeOrder(int orderId, LocalDate date) throws OrderPersistenceException, FileNotFoundException;
-        public void exportAllData() throws OrderPersistenceException;
+        void createOrder(Order order) throws OrderPersistenceException, DuplicateIdException, OrderDataValidationException, FileNotFoundException, TaxPersistenceException, ProductPersistenceException;
+        void editOrder(Order order) throws OrderPersistenceException, FileNotFoundException;
+        List<Order> getOrdersByDate(LocalDate date) throws OrderPersistenceException, FileNotFoundException;
+        void removeOrder(int orderId, LocalDate date) throws OrderPersistenceException, FileNotFoundException;
+        void exportAllData() throws OrderPersistenceException;
         List<Product> getAllProducts() throws ProductPersistenceException;
         BigDecimal getTaxRate(String state) throws TaxPersistenceException;
 }

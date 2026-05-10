@@ -1,5 +1,11 @@
 package com.m3.flooringMastery.view;
 
+/**
+ * FlooringMasteryView - View component responsible for user interface and user interactions.
+ * This class handles displaying menus, forms, and information to the user, and gathering input for orders.
+ * It manages the interaction flow for displaying orders, collecting order data, editing orders, and displaying results.
+ */
+
 import com.m3.flooringMastery.model.Order;
 import com.m3.flooringMastery.model.Product;
 

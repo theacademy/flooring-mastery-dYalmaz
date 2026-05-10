@@ -1,5 +1,11 @@
 package com.m3.flooringMastery.model;
 
+/**
+ * Product - Model class representing a flooring product.
+ * This class holds product information including product type, cost per square foot, and labor cost per square foot.
+ * It provides getters and setters for all product attributes.
+ */
+
 import java.math.BigDecimal;
 
 public class Product {

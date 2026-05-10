@@ -1,5 +1,12 @@
 package com.m3.flooringMastery.model;
 
+/**
+ * Order - Model class representing a flooring order.
+ * This class encapsulates all order-related data including customer information, product details,
+ * pricing, and costs. It provides getters/setters for all attributes and a method to calculate
+ * material, labor, tax, and total costs based on area and rates.
+ */
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
 

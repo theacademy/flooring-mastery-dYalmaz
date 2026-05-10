@@ -1,5 +1,11 @@
 package com.m3.flooringMastery.model;
 
+/**
+ * Tax - Model class representing tax information for a state.
+ * This class holds state-specific tax data including state abbreviation, full state name, and tax rate.
+ * It provides getters and setters for managing tax information per state.
+ */
+
 import java.math.BigDecimal;
 
 public class Tax {

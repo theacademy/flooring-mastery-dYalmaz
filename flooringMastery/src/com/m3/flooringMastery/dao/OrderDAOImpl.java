@@ -1,5 +1,11 @@
 package com.m3.flooringMastery.dao;
 
+/**
+ * OrderDAOImpl - Data Access Object for managing order persistence.
+ * This class handles all file I/O operations for orders including loading, saving, editing, and removing orders.
+ * It uses a delimiter-based file format to persist order data organized by date, and supports data export functionality.
+ */
+
 import com.m3.flooringMastery.model.Order;
 
 import java.io.*;
