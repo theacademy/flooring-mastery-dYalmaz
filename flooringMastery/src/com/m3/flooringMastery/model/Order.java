@@ -1,7 +1,6 @@
 package com.m3.flooringMastery.model;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.time.LocalDate;
 
 /**
@@ -113,12 +112,6 @@ public class Order {
         this.productType = productType;
     }
 
-    public void calculateCosts(BigDecimal costPerSquareFoot, BigDecimal laborCostPerSquareFoot){
-        this.materialCost = area.multiply(costPerSquareFoot);
-        this.laborCost = area.multiply(laborCostPerSquareFoot);
-        this.tax = (materialCost.add(laborCost)).multiply(taxRate.divide(new BigDecimal("100"), 4, RoundingMode.HALF_UP));
-        this.total = materialCost.add(laborCost).add(tax);
-    }
 
     public void setCostPerSquareFoot(BigDecimal costPerSquareFoot) {
         this.costPerSquareFoot = costPerSquareFoot;

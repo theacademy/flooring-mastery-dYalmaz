@@ -104,20 +104,16 @@ public class OrderServiceLayerImpl implements OrderServiceLayer {
 
         order.setState(order.getState().toUpperCase());
 
-        BigDecimal taxRate = taxDAO.getTaxRate(order.getState());
-        if (taxRate == null) {
+        // Validate state exists before retrieving tax rate
+        if (!taxDAO.stateExists(order.getState())) {
             throw new TaxPersistenceException("We do not operate in state: " + order.getState());
         }
+        BigDecimal taxRate = taxDAO.getTaxRate(order.getState());
 
-        Product product = productDAO.getAllProducts().stream()
-                .filter(p -> p.getProductType().equalsIgnoreCase(order.getProductType()))
-                .findFirst()
-                .orElseThrow(() ->
-                        new ProductPersistenceException("Invalid product: " + order.getProductType())
-                );
-
-        BigDecimal costPerSqFt = product.getCostPerSquareFoot();
-        BigDecimal laborCostPerSqFt = product.getLaborCostPerSquareFoot();
+        // Validate product type and retrieve pricing directly
+        productDAO.getProductType(order.getProductType()); // throws if invalid
+        BigDecimal costPerSqFt = productDAO.getCostPerSquareFoot(order.getProductType());
+        BigDecimal laborCostPerSqFt = productDAO.getLaborCostPerSquareFoot(order.getProductType());
 
         if (costPerSqFt == null || laborCostPerSqFt == null) {
             throw new ProductPersistenceException("Product pricing data is missing");
