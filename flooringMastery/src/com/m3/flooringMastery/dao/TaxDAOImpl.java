@@ -1,10 +1,5 @@
 package com.m3.flooringMastery.dao;
 
-/**
- * TaxDAOImpl - Data Access Object for managing tax information by state.
- * This class handles loading and retrieving tax rates for different states.
- * It provides validation of state abbreviations and access to all available tax data.
- */
 
 import com.m3.flooringMastery.model.Product;
 import com.m3.flooringMastery.model.Tax;
@@ -12,6 +7,11 @@ import com.m3.flooringMastery.model.Tax;
 import java.math.BigDecimal;
 import java.util.*;
 
+/**
+ * TaxDAOImpl - Data Access Object for managing tax information by state.
+ * This class handles loading and retrieving tax rates for different states.
+ * It provides validation of state abbreviations and access to all available tax data.
+ */
 public class TaxDAOImpl implements TaxDAO {
 
      public static final String TAX_FILE = "flooringMastery/Data/Taxes.txt";
