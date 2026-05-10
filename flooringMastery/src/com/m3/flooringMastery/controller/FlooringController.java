@@ -1,10 +1,6 @@
 package com.m3.flooringMastery.controller;
 
-/**
- * FlooringController - Main application controller that orchestrates the flooring mastery program.
- * This class manages the flow of the application by handling menu selections and delegating operations
- * to the service layer. It coordinates displaying orders, adding, editing, removing orders, and exporting data.
- */
+
 
 import com.m3.flooringMastery.dao.OrderPersistenceException;
 import com.m3.flooringMastery.dao.ProductPersistenceException;
@@ -17,6 +13,11 @@ import java.io.FileNotFoundException;
 import java.time.LocalDate;
 import java.util.List;
 
+/**
+ * FlooringController - Main application controller that orchestrates the flooring mastery program.
+ * This class manages the flow of the application by handling menu selections and delegating operations
+ * to the service layer. It coordinates displaying orders, adding, editing, removing orders, and exporting data.
+ */
 public class FlooringController {
     OrderServiceLayer orderService;
     FlooringMasteryView view;
@@ -114,10 +115,7 @@ public class FlooringController {
     public void editOrder() {
 
         try {
-            // 1. Get date
             LocalDate date = view.getDateFromUser();
-
-            // 2. Load orders
             List<Order> orders = orderService.getOrdersByDate(date);
 
             if (orders.isEmpty()) {
@@ -125,43 +123,24 @@ public class FlooringController {
                 return;
             }
 
-            // 3. Show orders
             view.displayOrders(orders);
-
-            // 4. Get order number
             int orderNumber = view.getUserOrderNumber();
 
-            // 5. Find original order
-            Order original = orders.stream()
-                    .filter(o -> o.getOrderNumber() == orderNumber)
-                    .findFirst()
-                    .orElse(null);
+            Order original = orderService.getOrderByDateAndNumber(date, orderNumber);
 
             if (original == null) {
                 view.displayError("Order not found.");
                 return;
             }
 
-            // 6. Get edited version (still raw, NOT recalculated)
             Order updated = view.editOrderMenu(original, orderService.getAllProducts());
-
-            // 7. Recalculate + validate via SERVICE (IMPORTANT)
             orderService.editOrder(updated);
 
-            // 8. Now reload updated order (ensures display shows correct values)
-            List<Order> refreshed = orderService.getOrdersByDate(date);
-
-            Order saved = refreshed.stream()
-                    .filter(o -> o.getOrderNumber() == orderNumber)
-                    .findFirst()
-                    .orElse(updated);
-
-            // 9. Display FINAL summary (now fully calculated)
-            view.displayOrderSummary(saved);
+            view.displayOrderSummary(updated);
 
             view.displayMessage("Order updated successfully.");
 
-        } catch (Exception e) {
+        } catch (OrderPersistenceException | FileNotFoundException | ProductPersistenceException e) {
             view.displayError("Edit error: " + e.getMessage());
         }
     }
@@ -169,10 +148,7 @@ public class FlooringController {
     public void removeOrder() {
 
         try {
-            // 1. Get date
             LocalDate date = view.getDateFromUser();
-
-            // 2. Load orders
             List<Order> orders = orderService.getOrdersByDate(date);
 
             if (orders.isEmpty()) {
@@ -180,27 +156,17 @@ public class FlooringController {
                 return;
             }
 
-            // 3. Display orders
             view.displayOrders(orders);
-
-            // 4. Ask for order number
             int orderNumber = view.getOrderNumberForRemoval();
 
-            // 5. Find order
-            Order orderToRemove = orders.stream()
-                    .filter(o -> o.getOrderNumber() == orderNumber)
-                    .findFirst()
-                    .orElse(null);
+            Order orderToRemove = orderService.getOrderByDateAndNumber(date, orderNumber);
 
             if (orderToRemove == null) {
                 view.displayError("Order not found.");
                 return;
             }
 
-            // 6. Show summary before delete
             view.displayOrderSummary(orderToRemove);
-
-            // 7. Confirm deletion
             boolean confirm = view.promptForSave(
                     "Are you sure you want to remove this order?"
             );
@@ -210,13 +176,11 @@ public class FlooringController {
                 return;
             }
 
-            // 8. Remove
             orderService.removeOrder(orderNumber, date);
 
-            // 9. Success
             view.displayMessage("Order removed successfully.");
 
-        } catch (Exception e) {
+        } catch (OrderPersistenceException | FileNotFoundException e) {
             view.displayError("Remove error: " + e.getMessage());
         }
     }
@@ -226,7 +190,7 @@ public class FlooringController {
         try {
             orderService.exportAllData();
             view.exportData();
-        } catch (Exception e) {
+        } catch (OrderPersistenceException e) {
             view.displayError("Export failed: " + e.getMessage());
         }
     }

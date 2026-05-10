@@ -1,15 +1,15 @@
 package com.m3.flooringMastery.model;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.time.LocalDate;
+
 /**
  * Order - Model class representing a flooring order.
  * This class encapsulates all order-related data including customer information, product details,
  * pricing, and costs. It provides getters/setters for all attributes and a method to calculate
  * material, labor, tax, and total costs based on area and rates.
  */
-
-import java.math.BigDecimal;
-import java.time.LocalDate;
-
 public class Order {
     int orderNumber;
     String customerName;
@@ -116,7 +116,7 @@ public class Order {
     public void calculateCosts(BigDecimal costPerSquareFoot, BigDecimal laborCostPerSquareFoot){
         this.materialCost = area.multiply(costPerSquareFoot);
         this.laborCost = area.multiply(laborCostPerSquareFoot);
-        this.tax = (materialCost.add(laborCost)).multiply(taxRate.divide(new BigDecimal("100")));
+        this.tax = (materialCost.add(laborCost)).multiply(taxRate.divide(new BigDecimal("100"), 4, RoundingMode.HALF_UP));
         this.total = materialCost.add(laborCost).add(tax);
     }
 
