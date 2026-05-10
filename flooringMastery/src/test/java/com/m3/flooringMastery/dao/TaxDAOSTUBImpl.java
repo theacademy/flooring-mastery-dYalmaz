@@ -11,9 +11,9 @@ public class TaxDAOSTUBImpl implements TaxDAO {
 
     @Override
     public BigDecimal getTaxRate(String state) {
-
-        if(state.equalsIgnoreCase("CA")) {
-            return new BigDecimal("25.00");
+        if (state == null) return null;
+        if (state.equalsIgnoreCase("CA")) {
+            return new BigDecimal("8.25");
         }
 
         return null;
@@ -21,11 +21,14 @@ public class TaxDAOSTUBImpl implements TaxDAO {
 
     @Override
     public boolean stateExists(String stateAbbreviation) throws TaxPersistenceException {
-        return false;
+        if (stateAbbreviation == null) return false;
+        return stateAbbreviation.equalsIgnoreCase("CA");
     }
 
     @Override
     public List<Tax> getAllTaxes() throws TaxPersistenceException {
-        return List.of();
+        Tax ca = new Tax("CA");
+        ca.setTaxRate(new BigDecimal("8.25"));
+        return List.of(ca);
     }
 }
