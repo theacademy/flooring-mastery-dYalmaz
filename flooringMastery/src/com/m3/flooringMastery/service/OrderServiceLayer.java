@@ -25,5 +25,6 @@ public interface OrderServiceLayer {
         void exportAllData() throws OrderPersistenceException;
         List<Product> getAllProducts() throws ProductPersistenceException;
             List<String> getAllStates() throws TaxPersistenceException;
+            Order prepareOrder(Order order) throws TaxPersistenceException, ProductPersistenceException, OrderPersistenceException;
         BigDecimal getTaxRate(String state) throws TaxPersistenceException;
 }

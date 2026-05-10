@@ -102,10 +102,26 @@ public class FlooringController {
             Order order = view.getOrderFromUser(products, states);
 
             try {
-                orderService.createOrder(order);
+                // Prepare (validate + calculate) so we can show a summary before persisting
+                Order prepared = orderService.prepareOrder(order);
 
-                //
-                view.displayAddSuccessBanner();
+                // Show summary and confirm
+                view.displayOrderSummary(prepared);
+                boolean confirm = view.promptForSave("Save this order?");
+                if (!confirm) {
+                    view.displayMessage("Order not saved.");
+                    return;
+                }
+
+                // Persist
+                try {
+                    orderService.createOrder(prepared);
+                    view.displayAddSuccessBanner();
+                    return;
+                } catch (OrderPersistenceException | FileNotFoundException e) {
+                    hasErrors = true;
+                    view.displayError("Save error: " + e.getMessage());
+                }
 
             } catch (TaxPersistenceException e) {
                 hasErrors = true;
@@ -115,9 +131,9 @@ public class FlooringController {
                 hasErrors = true;
                 view.displayError("Product error: " + e.getMessage());
 
-            } catch (OrderPersistenceException | FileNotFoundException e) {
+            } catch (OrderPersistenceException e) {
                 hasErrors = true;
-                view.displayError("Save error: " + e.getMessage());
+                view.displayError("Validation error: " + e.getMessage());
             }
 
         } while (hasErrors);

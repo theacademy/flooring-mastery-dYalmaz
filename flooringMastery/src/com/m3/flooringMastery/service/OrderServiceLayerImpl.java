@@ -109,6 +109,14 @@ public class OrderServiceLayerImpl implements OrderServiceLayer {
                 .collect(Collectors.toList());
     }
 
+    @Override
+    public Order prepareOrder(Order order) throws TaxPersistenceException, ProductPersistenceException, OrderPersistenceException {
+        // Validate and enrich the order (calculations) without persisting or assigning an order number
+        validateOrder(order);
+        finalizeOrder(order);
+        return order;
+    }
+
 
     private void finalizeOrder(Order order)
             throws TaxPersistenceException, ProductPersistenceException {
