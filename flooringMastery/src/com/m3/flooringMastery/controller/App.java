@@ -1,11 +1,5 @@
 package com.m3.flooringMastery.controller;
 
-/**
- * App - Main entry point for the Flooring Mastery application.
- * This class initializes all dependencies and components including DAOs, service layer, views, and controller,
- * then starts the application flow.
- */
-
 import com.m3.flooringMastery.dao.*;
 import com.m3.flooringMastery.service.OrderServiceLayer;
 import com.m3.flooringMastery.view.FlooringMasteryView;
@@ -13,6 +7,11 @@ import com.m3.flooringMastery.view.UserIO;
 import com.m3.flooringMastery.view.UserIOImpl;
 import com.m3.flooringMastery.service.OrderServiceLayerImpl;
 
+/**
+ * App - Main entry point for the Flooring Mastery application.
+ * This class initializes all dependencies and components including DAOs, service layer, views, and controller,
+ * then starts the application flow.
+ */
 public class App {
     public static void main(String[] args) {
         UserIO io = new UserIOImpl();

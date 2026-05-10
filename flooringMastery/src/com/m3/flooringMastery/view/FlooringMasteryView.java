@@ -6,7 +6,6 @@ import com.m3.flooringMastery.model.Product;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 /**
@@ -223,18 +222,16 @@ public class FlooringMasteryView {
 
     public void displayOrders(List<Order> orders) {
 
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("M/d/yyyy");
-
         for (Order order : orders) {
 
             String orderInfo = String.format(
-                    "Order #%d: %s, %s, %s, %.2f sq ft (%s)",
+                    "Order #%d: %s, %s, %s, %.2f sq ft - Total: $%.2f",
                     order.getOrderNumber(),
                     order.getCustomerName(),
                     order.getState(),
                     order.getProductType(),
                     order.getArea(),
-                    order.getOrderDate().format(formatter)
+                    order.getTotal()
             );
 
             io.displayMessage(orderInfo);
