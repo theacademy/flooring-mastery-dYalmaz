@@ -36,7 +36,7 @@ public class FlooringMasteryView {
         return io.readDate("Please enter a date (MM/DD/YYYY): ");
     }
 
-    public Order getOrderFromUser(List<Product> products) {
+    public Order getOrderFromUser(List<Product> products, List<String> validStates) {
 
         LocalDate date = io.readDate("Please enter the order date (MM/DD/YYYY): ");
 
@@ -48,8 +48,8 @@ public class FlooringMasteryView {
 
         String state = io.readString("Please enter the state abbreviation: ");
 
-        while (state.trim().isEmpty() || !state.trim().matches("(?i)^[a-z]{2}$")) {
-            io.displayMessage("Please enter a valid 2-letter state code (e.g. CA, TX).");
+        while (state.trim().isEmpty() || !state.trim().matches("(?i)^[a-z]{2}$") || !validStates.contains(state.trim().toUpperCase())) {
+            io.displayMessage("Please enter a valid 2-letter state code (e.g. CA, TX) that we operate in.");
             state = io.readString("Please enter the state abbreviation: ");
         }
 
@@ -77,7 +77,7 @@ public class FlooringMasteryView {
             area = io.readBigDecimal("Please enter the area (in sq ft): ");
         }
 
-        // ✔ VIEW ONLY builds the object (NO CALCULATIONS)
+        // view builds the object
         Order order = new Order();
         order.setOrderDate(date);
         order.setCustomerName(customerName);
@@ -107,7 +107,7 @@ public class FlooringMasteryView {
     }
 
 
-    public Order editOrderMenu(Order originalOrder, List<Product> products) {
+    public Order editOrderMenu(Order originalOrder, List<Product> products, List<String> validStates) {
 
         Order updated = new Order();
 
@@ -144,12 +144,13 @@ public class FlooringMasteryView {
                 break;
             }
 
-            if (state.trim().matches("(?i)^[a-z]{2}$")) {
-                updated.setState(state.trim().toUpperCase());
+            String candidate = state.trim().toUpperCase();
+            if (state.trim().matches("(?i)^[a-z]{2}$") && validStates.contains(candidate)) {
+                updated.setState(candidate);
                 break;
             }
 
-            io.displayMessage("Please enter a valid 2-letter state code (e.g. CA, TX).");
+            io.displayMessage("Please enter a valid 2-letter state code (e.g. CA, TX) that we operate in.");
         }
 
         // ---------- PRODUCT TYPE ----------

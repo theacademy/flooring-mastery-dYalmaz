@@ -6,6 +6,7 @@ import com.m3.flooringMastery.dao.OrderPersistenceException;
 import com.m3.flooringMastery.dao.ProductPersistenceException;
 import com.m3.flooringMastery.dao.TaxPersistenceException;
 import com.m3.flooringMastery.model.Order;
+import com.m3.flooringMastery.model.Product;
 import com.m3.flooringMastery.service.OrderServiceLayer;
 import com.m3.flooringMastery.view.FlooringMasteryView;
 
@@ -59,7 +60,7 @@ public class FlooringController {
                             view.displayUnknownCommandBanner();
                     }
                 }
-            } catch (OrderPersistenceException | FileNotFoundException | ProductPersistenceException e) {
+                } catch (OrderPersistenceException | FileNotFoundException e) {
                 view.displayError(e.getMessage());
             }
 
@@ -80,7 +81,7 @@ public class FlooringController {
             }
         }
 
-    public void addOrder() throws ProductPersistenceException {
+    public void addOrder() {
 
         view.displayAddOrderBanner();
 
@@ -88,12 +89,22 @@ public class FlooringController {
 
         do {
             hasErrors = false;
+            List<Product> products;
+            List<String> states;
+            try {
+                products = orderService.getAllProducts();
+                states = orderService.getAllStates();
+            } catch (ProductPersistenceException | TaxPersistenceException e) {
+                view.displayError("Data load error: " + e.getMessage());
+                return;
+            }
 
-            Order order = view.getOrderFromUser(orderService.getAllProducts());
+            Order order = view.getOrderFromUser(products, states);
 
             try {
                 orderService.createOrder(order);
 
+                //
                 view.displayAddSuccessBanner();
 
             } catch (TaxPersistenceException e) {
@@ -133,14 +144,24 @@ public class FlooringController {
                 return;
             }
 
-            Order updated = view.editOrderMenu(original, orderService.getAllProducts());
+            List<Product> products;
+            List<String> states;
+            try {
+                products = orderService.getAllProducts();
+                states = orderService.getAllStates();
+            } catch (ProductPersistenceException | TaxPersistenceException e) {
+                view.displayError("Data load error: " + e.getMessage());
+                return;
+            }
+
+            Order updated = view.editOrderMenu(original, products, states);
             orderService.editOrder(updated);
 
             view.displayOrderSummary(updated);
 
             view.displayMessage("Order updated successfully.");
 
-        } catch (OrderPersistenceException | FileNotFoundException | ProductPersistenceException e) {
+        } catch (OrderPersistenceException | FileNotFoundException e) {
             view.displayError("Edit error: " + e.getMessage());
         }
     }

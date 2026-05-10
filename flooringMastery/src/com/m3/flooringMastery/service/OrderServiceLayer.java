@@ -24,5 +24,6 @@ public interface OrderServiceLayer {
         void removeOrder(int orderId, LocalDate date) throws OrderPersistenceException, FileNotFoundException;
         void exportAllData() throws OrderPersistenceException;
         List<Product> getAllProducts() throws ProductPersistenceException;
+            List<String> getAllStates() throws TaxPersistenceException;
         BigDecimal getTaxRate(String state) throws TaxPersistenceException;
 }

@@ -9,6 +9,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * OrderServiceLayerImpl - Service layer implementation for order operations.
@@ -40,6 +41,9 @@ public class OrderServiceLayerImpl implements OrderServiceLayer {
                 .mapToInt(Order::getOrderNumber)
                 .max()
                 .orElse(0) + 1;
+
+
+        // Display the order summary to the user for confirmation before saving
 
         order.setOrderNumber(nextId);
 
@@ -98,6 +102,13 @@ public class OrderServiceLayerImpl implements OrderServiceLayer {
         return taxDAO.getTaxRate(state);
     }
 
+    @Override
+    public List<String> getAllStates() throws TaxPersistenceException {
+        return taxDAO.getAllTaxes().stream()
+                .map(t -> t.getStateAbbreviation().toUpperCase())
+                .collect(Collectors.toList());
+    }
+
 
     private void finalizeOrder(Order order)
             throws TaxPersistenceException, ProductPersistenceException {
@@ -107,6 +118,7 @@ public class OrderServiceLayerImpl implements OrderServiceLayer {
         // Validate state exists before retrieving tax rate
         if (!taxDAO.stateExists(order.getState())) {
             throw new TaxPersistenceException("We do not operate in state: " + order.getState());
+
         }
         BigDecimal taxRate = taxDAO.getTaxRate(order.getState());
 
