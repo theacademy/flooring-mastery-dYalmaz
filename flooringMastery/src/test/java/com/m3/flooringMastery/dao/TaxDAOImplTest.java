@@ -19,7 +19,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class TaxDAOImplTest {
 
-	private static final Path TARGET_TAX_FILE = Path.of("flooringMastery", "Data", "Taxes.txt");
+	private static final Path TARGET_TAX_FILE = Path.of("flooringMasteryTestData", "Data", "Taxes.txt");
 
 	private TaxDAO dao;
 
@@ -94,18 +94,10 @@ public class TaxDAOImplTest {
 	@Test
 	void testMissingTaxFileThrowsPersistenceException() throws Exception {
 
-		Path taxFile = TARGET_TAX_FILE;
-		Path backupFile = taxFile.resolveSibling(taxFile.getFileName() + ".bak");
+		Path missingTaxFile = Files.createTempDirectory("tax-dao-test").resolve("missing-taxes.txt");
 
-		Files.deleteIfExists(backupFile);
-		Files.move(taxFile, backupFile, StandardCopyOption.REPLACE_EXISTING);
-
-		try {
-			assertThrows(TaxPersistenceException.class, () -> new TaxDAOImpl().getAllTaxes());
-		} finally {
-			if (Files.exists(backupFile)) {
-				Files.move(backupFile, taxFile, StandardCopyOption.REPLACE_EXISTING);
-			}
-		}
+		assertFalse(Files.exists(missingTaxFile));
+		TaxDAO missingFileDao = new TaxDAOImpl(missingTaxFile);
+		assertThrows(TaxPersistenceException.class, missingFileDao::getAllTaxes);
 	}
 }

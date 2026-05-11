@@ -7,6 +7,7 @@ import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.math.BigDecimal;
+import java.nio.file.Path;
 import java.util.*;
 
 /**
@@ -16,9 +17,22 @@ import java.util.*;
  */
 public class ProductDAOImpl implements ProductDAO {
 
-    public static final String PRODUCT_FILE = "flooringMastery/Data/Products.txt";
+    public static final String PRODUCT_FILE = "Data/Products.txt";
     public static final String DELIMITER = ":;:";
+    private final Path productFile;
     Map<String, Product> products = new HashMap<>();
+
+    public ProductDAOImpl() {
+        this(Path.of(PRODUCT_FILE));
+    }
+
+    public ProductDAOImpl(String productFile) {
+        this(Path.of(productFile));
+    }
+
+    public ProductDAOImpl(Path productFile) {
+        this.productFile = productFile;
+    }
 
     @Override
     public BigDecimal getCostPerSquareFoot(String productType) throws ProductPersistenceException {
@@ -63,7 +77,7 @@ public class ProductDAOImpl implements ProductDAO {
         Scanner scanner;
 
         try {
-            scanner = new Scanner(new BufferedReader(new FileReader(PRODUCT_FILE)));
+            scanner = new Scanner(new BufferedReader(new FileReader(productFile.toFile())));
         } catch (FileNotFoundException e) {
             throw new ProductPersistenceException("Could not load product data into memory.");
         }

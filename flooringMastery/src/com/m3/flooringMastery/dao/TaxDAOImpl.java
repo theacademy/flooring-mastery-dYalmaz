@@ -1,10 +1,10 @@
 package com.m3.flooringMastery.dao;
 
 
-import com.m3.flooringMastery.model.Product;
 import com.m3.flooringMastery.model.Tax;
 
 import java.math.BigDecimal;
+import java.nio.file.Path;
 import java.util.*;
 
 /**
@@ -14,10 +14,22 @@ import java.util.*;
  */
 public class TaxDAOImpl implements TaxDAO {
 
-     public static final String TAX_FILE = "flooringMastery/Data/Taxes.txt";
+     public static final String TAX_FILE = "Data/Taxes.txt";
      public static final String DELIMITER = ":;:";
+    private final Path taxFile;
     Map<String, Tax> taxes = new HashMap<>();
-     Tax tax;
+
+    public TaxDAOImpl() {
+        this(Path.of(TAX_FILE));
+    }
+
+    public TaxDAOImpl(String taxFile) {
+        this(Path.of(taxFile));
+    }
+
+    public TaxDAOImpl(Path taxFile) {
+        this.taxFile = taxFile;
+    }
 
 
     @Override
@@ -59,7 +71,7 @@ public class TaxDAOImpl implements TaxDAO {
         try {
             scanner = new Scanner(
                     new java.io.BufferedReader(
-                            new java.io.FileReader(TAX_FILE)));
+                            new java.io.FileReader(taxFile.toFile())));
         } catch (java.io.FileNotFoundException e) {
             throw new TaxPersistenceException("Could not load tax data.", e);
         }

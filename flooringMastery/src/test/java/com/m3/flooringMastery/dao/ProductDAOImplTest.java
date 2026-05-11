@@ -17,7 +17,8 @@ import java.util.stream.Collectors;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class ProductDAOImplTest {
-	private static final Path TARGET_PRODUCT_FILE = Path.of("flooringMastery", "Data", "Products.txt");
+	private static final Path TARGET_PRODUCT_FILE = Path.of("flooringMasteryTestData", "Data", "Products.txt");
+	private static final Path DAO_PRODUCT_FILE = Path.of("Data", "Products.txt");
 
 	private ProductDAO dao() {
 		return new ProductDAOImpl();
@@ -29,9 +30,9 @@ public class ProductDAOImplTest {
 
 		assertTrue(Files.exists(sourceProductFile), "Could not locate a source Products.txt fixture.");
 
-		Files.createDirectories(TARGET_PRODUCT_FILE.getParent());
-		if (!sourceProductFile.equals(TARGET_PRODUCT_FILE)) {
-			Files.copy(sourceProductFile, TARGET_PRODUCT_FILE, StandardCopyOption.REPLACE_EXISTING);
+		Files.createDirectories(DAO_PRODUCT_FILE.getParent());
+		if (!sourceProductFile.equals(DAO_PRODUCT_FILE)) {
+			Files.copy(sourceProductFile, DAO_PRODUCT_FILE, StandardCopyOption.REPLACE_EXISTING);
 		}
 	}
 
@@ -122,18 +123,10 @@ public class ProductDAOImplTest {
 	@Test
 	void testMissingProductFileThrowsPersistenceException() throws Exception {
 
-		Path productFile = TARGET_PRODUCT_FILE;
-		Path backupFile = productFile.resolveSibling(productFile.getFileName() + ".bak");
+		Path tempProductFile = Files.createTempDirectory("product-dao-test").resolve("missing-products.txt");
 
-		Files.deleteIfExists(backupFile);
-		Files.move(productFile, backupFile, StandardCopyOption.REPLACE_EXISTING);
-
-		try {
-			assertThrows(ProductPersistenceException.class, () -> dao().getAllProducts());
-		} finally {
-			if (Files.exists(backupFile)) {
-				Files.move(backupFile, productFile, StandardCopyOption.REPLACE_EXISTING);
-			}
-		}
+		assertFalse(Files.exists(tempProductFile));
+		ProductDAO missingFileDao = new ProductDAOImpl(tempProductFile);
+		assertThrows(ProductPersistenceException.class, missingFileDao::getAllProducts);
 	}
 }
