@@ -26,10 +26,6 @@ public class ProductDAOImpl implements ProductDAO {
         this(Path.of(PRODUCT_FILE));
     }
 
-    public ProductDAOImpl(String productFile) {
-        this(Path.of(productFile));
-    }
-
     public ProductDAOImpl(Path productFile) {
         this.productFile = productFile;
     }
